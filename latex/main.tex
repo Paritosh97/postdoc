@@ -52,16 +52,25 @@ Rules can be used to give a prescriptive logic that defines how to generate or m
 
 \subsubsection{Constraints}
 
-Constraints define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla} However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments. ScenicNL ~\cite{elmaaroufi2024scenicnl} extends Scenic by allowing users to specify constraints in natural language, making it more accessible to non-coders. However, it still relies on a predefined set of constraints and may not capture the full complexity of urban environments. 
+Constraints define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla} However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments.
 
-\subsubsection{Neural Network based}
+\subsubsection{Prompts}
 
-Neural network-based approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. ChatDyn~\cite{wei2024chatdyn} creates a 3D scenario from a text prompt by first generating a high-level planning and then uses a PedExecuter and VehExecuter to generate pedestrian and vehicle trajectories. 
+Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of large language models (LLMs) like GPT-3, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table \ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
 
-- chatdyn
-- 3D-ScenarioDreamer
-- chatscenario
-- urbanworld
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
+ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
+LayoutGPT~\cite{feng2023layoutgpt} & CSS-like Layout Formatting for LLMs & Layout Representation \\ \hline
+TODO
+\end{tabular}
+\caption{Prompt-based Models for Urban Scenario Generation}
+\label{tab:prompt_based_models}
+\end{table}
 
 \subsubsection{Layout}
 top-down map-like view
@@ -77,6 +86,28 @@ ontology
 
 \subsection{Generation Paradigms}
 
+Generative models can be broadly classified into two paradigms: **rule-based** and **data-driven**. Rule-based approaches rely on predefined rules or constraints to generate scenarios, while data-driven methods leverage machine learning techniques to learn from existing data and generate new scenarios b1ased on learned patterns.
+
+\subsubsection{Rule-based Approaches}
+
+\subsection{Data-driven Approaches}
+
+Data-driven  approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
+
+\paragraph{Large Language Model (LLM) based} models use the knowledge learnt from large text corpora to generate scenarios based on natural language prompts. Table \ref{tab:llm_based_models} lists some of the recent LLM-based models for scenario generation.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline        
+        LayoutGPT~\cite{feng2023layoutgpt} & CSS-like Layout Formatting for LLMs & Layout Representation \\ \hline
+        ChatDyn~\cite{wei2024chatdyn} & LLM-based layout planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ 
+
+    \end{tabular}
+    \caption{LLM-based Models for Urban Scenario Generation}
+    \label{tab:llm_based_models}
+\end{table}
 
 \subsection{Output}
 

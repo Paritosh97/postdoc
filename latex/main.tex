@@ -46,13 +46,24 @@ In this section, we review the existing literature on generative models for urba
 
 Generative models have been applied to traffic scenario generation, where models synthesize plausible urban environments, pedestrian layouts, or vehicle positions from various types of input. An input in the context of a generative model is any data—such as a prompt, image, or scenario graph—provided to influence the output. Grounding, on the other hand, is the process of linking elements of that input to specific, coherent representations in the generated scenario, such as ensuring the "footpath" appears visually plausible, is correctly positioned on the "road", and respects spatial relationships or physical constraints. Grounding ensures the generated scenario isn't just randomly composed but meaningfully aligned with the intended semantics of the input. The common ways to do grounding are,
 
-\subsubsection{Rules}
+\subsubsection{Rules and Constraints}
 
-Rules can be used to give a prescriptive logic that defines how to generate or modify a scenario. Rule-based systems are necessarily procedural, meaning they follow a set of predefined steps or algorithms to create scenarios. Popular rule-based systems include \textbf{CityEngine}~\cite{parish2001procedural} and \textbf{Infinigen}~\cite{raistrick2023infinite}, which allows users to create complex 3D scenarios by specifying rules for terrain, vegetation, and other elements. Though these systems can generate diverse and complex scenes by applying rules iteratively, they fail to capture the inherent variability and uncertainty present in real-world environments. This can lead to scenes that, while visually coherent, may not accurately reflect the diversity of urban landscapes.
+\paragraph{Rules} can be used to give a prescriptive logic that defines how to generate or modify a scenario. Rule-based systems are necessarily procedural, meaning they follow a set of predefined steps or algorithms to create scenarios. Table \ref{tab:rule_based_models} lists some of the recent rule-based models for scenario generation. Although these systems allow users to define rules for generating scenarios—such as the placement of buildings, roads, and other elements—they often require an intermediate representation which captures the real-world environments. Creating such representations can be challenging, as it requires a deep understanding of the underlying rules and relationships between different elements. Additionally, rule-based systems can be limited in their ability to generate diverse and realistic scenarios, as they rely on predefined rules that may not capture the full complexity of real-world environments.
 
-\subsubsection{Constraints}
+\begin{table}[ht]
+\centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    CityEngine~\cite{parish2001procedural} & Procedural Modeling with Rules & 3D scene \\ \hline
+    Infinigen~\cite{raistrick2023infinite} & Procedural Modeling with Rules & 3D scene \\ \hline
+    MetaUrban~\cite{wu2024metaurban} & Description Scripts for Scene Layout & 3D Scenario \\ \hline    
+    \end{tabular}
+\caption{Rule-based Models for Urban Scenario Generation}
+\label{tab:rule_based_models}
+\end{table}
 
-Constraints define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla} However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments.
+\paragraph{Constraints} define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla}. However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments.
 
 \subsubsection{Prompts}
 
@@ -60,27 +71,61 @@ Prompts are textual cues provided to the generative model to guide the scenario 
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|c|c|c|}
-\hline
-\textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
-ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
-ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
-LayoutGPT~\cite{feng2023layoutgpt} & CSS-like Layout Formatting for LLMs & Layout Representation \\ \hline
-TODO
-\end{tabular}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
+    ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
+    LayoutGPT~\cite{feng2023layoutgpt} & Prompts converted to CSS-like Layout Formatting by LLMs & Layout Representation \\ \hline
+    ChatDyn~\cite{wei2024chatdyn} & LLM-based layout planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
+    Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
+    TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
+    3D-SceneDreamer~\cite{zhang20243d} & Prompt to Image followed by Image to 3D & 3D Scene \\ \hline
+    \end{tabular}
 \caption{Prompt-based Models for Urban Scenario Generation}
 \label{tab:prompt_based_models}
 \end{table}
 
-\subsubsection{Layout}
-top-down map-like view
+\subsubsection{Layouts}
+
+Layouts are structured representations of scenarios that capture the spatial relationships between different elements, such as buildings, roads, and pedestrians. These may include bird's-eye views, top-down maps, or other forms of spatial representations that provide a high-level overview of the scenario. Table \ref{tab:layout_based_models} lists some of the recent layout-based models for scenario generation.
+
+\begin{table}[ht]
+\centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    CC3D~\cite{bahmani2023cc3d} & 2D Layout-based 3D Scene Generation & 3D Scene \\ \hline
+    CityDreamer4D~\cite{xie2025citydreamer4d} & Uses a Layout Generator and a traffic scenario generator & 3D Scenario \\ \hline
+    \end{tabular}
+\caption{Layout-based Models for Urban Scenario Generation}
+\label{tab:layout_based_models}
+\end{table}
+
+
+\subsubsection{Multimodal Input}
+
+Multimodal inputs combine different types of data, such as text, images, and structured representations, to provide a richer context for scenario generation. Table \ref{tab:multimodal_models} lists some of the recent multimodal models for scenario generation.
+
+\begin{table}[ht]
+\centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
+    CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
+    UrbanWorld~\cite{shang2024urbanworld} & Layout data, text prompts, images & 3D Scenario \\ \hline
+    CityCraft~\cite{deng2024citycraft} & Prayout data and text prompts & 3D Scene \\ \hline
+    Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
+    \end{tabular}
+\caption{Multimodal Models for Urban Scenario Generation}
+\label{tab:multimodal_models}
+
 
 \subsubsection{Images / Videos}
 appearance
 
 \subsubsection{Scenario Graphs}
 ontology
-
 
 \textbf{LayoutGPT}~\cite{feng2023layoutgpt} introduces a training-free method for leveraging LLMs in layout-based visual planning by formatting layouts using a CSS-like structure that LLMs can easily interpret. To support in-context learning, \textbf{CLIP}~\cite{radford2021learning} is used to retrieve the most relevant past examples by comparing the similarity between the input prompt and stored text-image pairs.
 

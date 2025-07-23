@@ -116,6 +116,8 @@ Multimodal inputs combine different types of data, such as text, images, and str
     UrbanWorld~\cite{shang2024urbanworld} & Layout data, text prompts, images & 3D Scenario \\ \hline
     CityCraft~\cite{deng2024citycraft} & Prayout data and text prompts & 3D Scene \\ \hline
     Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
+    Dynamic City~\cite{bian2024dynamiccity} & Commands, Layouts, Object Inpainting and Trajectory & 3D Scenario \\ \hline
+    GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or Images & 3D Scene \\ \hline
     \end{tabular}
 \caption{Multimodal Models for Urban Scenario Generation}
 \label{tab:multimodal_models}
@@ -126,8 +128,6 @@ appearance
 
 \subsubsection{Scenario Graphs}
 ontology
-
-\textbf{LayoutGPT}~\cite{feng2023layoutgpt} introduces a training-free method for leveraging LLMs in layout-based visual planning by formatting layouts using a CSS-like structure that LLMs can easily interpret. To support in-context learning, \textbf{CLIP}~\cite{radford2021learning} is used to retrieve the most relevant past examples by comparing the similarity between the input prompt and stored text-image pairs.
 
 \subsection{Generation Paradigms}
 

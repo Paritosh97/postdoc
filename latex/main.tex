@@ -81,6 +81,7 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
     TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
     3D-SceneDreamer~\cite{zhang20243d} & Prompt to Image followed by Image to 3D & 3D Scene \\ \hline
+    Work by Liu et al.~\cite{liu2024graph} & Uses LLM to create a scene graph & 3D Scene \\ \hline
     \end{tabular}
 \caption{Prompt-based Models for Urban Scenario Generation}
 \label{tab:prompt_based_models}
@@ -97,13 +98,14 @@ Layouts are structured representations of scenarios that capture the spatial rel
     \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
     CC3D~\cite{bahmani2023cc3d} & 2D Layout-based 3D Scene Generation & 3D Scene \\ \hline
     CityDreamer4D~\cite{xie2025citydreamer4d} & Uses a Layout Generator and a traffic scenario generator & 3D Scenario \\ \hline
+    Infinicube~\cite{lu2024infinicube} & Text prompts, HD Maps and Bounding Boxes & 3D Scenario \\ \hline
     \end{tabular}
 \caption{Layout-based Models for Urban Scenario Generation}
 \label{tab:layout_based_models}
 \end{table}
 
 
-\subsubsection{Multimodal Input}
+\subsubsection{Multimodal}
 
 Multimodal inputs combine different types of data, such as text, images, and structured representations, to provide a richer context for scenario generation. Table \ref{tab:multimodal_models} lists some of the recent multimodal models for scenario generation.
 
@@ -118,6 +120,8 @@ Multimodal inputs combine different types of data, such as text, images, and str
     Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
     Dynamic City~\cite{bian2024dynamiccity} & Commands, Layouts, Object Inpainting and Trajectory & 3D Scenario \\ \hline
     GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or Images & 3D Scene \\ \hline
+    MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
+    Scene123~\cite{yang2024scene123} & Text prompt, Image or Text Description & 3D Scene \\ \hline
     \end{tabular}
 \caption{Multimodal Models for Urban Scenario Generation}
 \label{tab:multimodal_models}
@@ -196,6 +200,10 @@ sind
 \subsection{Validation}
 
 \subsection{Limitations and Open Questions}
+
+- little attention to road topology in existing works (eg roadgen)
+- pedestrian ego using scenic or something?
+- nothing much in interaction "gamified part"
 
 
 \section{Work Plan}

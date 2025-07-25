@@ -2,10 +2,12 @@
 \usepackage[utf8]{inputenc}
 \usepackage{appendix}
 \usepackage{url}
+\usepackage{amssymb}    % for \checkmark
+\usepackage{booktabs}  
 
 \title{Scenario Generation for Interactive Urban Environments}
 %\author{Paritosh Sharma, Hui-Yin Wu}
-\date{May 2025}
+\date{July 2025}
 
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -69,8 +71,9 @@ Generative models have been applied to traffic scenario generation, where models
 
 Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of large language models (LLMs) like GPT-3, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table \ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
 
-\begin{table}[ht]
+\begin{table}[h]
 \centering
+\resizebox{\textwidth}{!}{
     \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
@@ -84,9 +87,11 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     Work by Liu et al.~\cite{liu2024graph} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     \end{tabular}
+}
 \caption{Prompt-based Models for Urban Scenario Generation}
 \label{tab:prompt_based_models}
 \end{table}
+
 
 \subsubsection{Layouts}
 
@@ -112,6 +117,7 @@ Multimodal inputs combine different types of data, such as text, images, and str
 
 \begin{table}[ht]
 \centering
+\resizebox{\textwidth}{!}{
     \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
@@ -123,98 +129,121 @@ Multimodal inputs combine different types of data, such as text, images, and str
     GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or Images & 3D Scene \\ \hline
     MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
     Scene123~\cite{yang2024scene123} & Text prompt, Image or Text Description & 3D Scene \\ \hline
-    \end{tabular}
+    \end{tabular}}
 \caption{Multimodal Models for Urban Scenario Generation}
 \label{tab:multimodal_models}
-
-
-\subsubsection{Images / Videos}
-appearance
-
-\subsubsection{Scenario Graphs}
-ontology
+\end{table}
 
 \subsection{Generation Paradigms}
 
-Generative models can be broadly classified into two paradigms: **rule-based** and **data-driven**. Rule-based approaches rely on predefined rules or constraints to generate scenarios, while data-driven methods leverage machine learning techniques to learn from existing data and generate new scenarios b1ased on learned patterns.
+Generative models can be broadly classified into two paradigms: \textbf{procedural} and \textbf{data-driven}. Procedural approaches rely on predefined rules or constraints to generate scenarios, while data-driven methods leverage machine learning techniques to learn from existing data and generate new scenarios based on learned patterns.
 
-\subsubsection{Rule-based Approaches}
+\subsubsection{Procedural Approaches}
 
-\subsection{Data-driven Approaches}
+Procedural approaches use a set of rules or algorithms to generate scenarios.
+
+\subsubsection{Data-driven Approaches}
 
 Data-driven  approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
 
-\paragraph{Large Language Model (LLM) based} models use the knowledge learnt from large text corpora to generate scenarios based on natural language prompts. Table \ref{tab:llm_based_models} lists some of the recent LLM-based models for scenario generation.
+\paragraph{GANs} 
 
-\begin{table}[ht]
-    \centering
-    \begin{tabular}{|c|c|c|}
-        \hline
-        \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline        
-        LayoutGPT~\cite{feng2023layoutgpt} & CSS-like Layout Formatting for LLMs & Layout Representation \\ \hline
-        ChatDyn~\cite{wei2024chatdyn} & LLM-based layout planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ 
+\paragraph{Autoregressive} 
 
-    \end{tabular}
-    \caption{LLM-based Models for Urban Scenario Generation}
-    \label{tab:llm_based_models}
-\end{table}
+\paragraph{Diffusion} 
 
-\subsection{Output}
-
-Generative models can produce a wide range of outputs depending on their architecture and intended application. These outputs vary in structure and fidelity, ranging from low-level pixel images to high-level semantic representations. In the context of road crossing simulation, choosing the appropriate output type is critical, as it determines how easily the generated content can be interpreted, manipulated, or rendered in downstream systems such as virtual reality.
-
-One common output format is the **semantic layout** or **scenario graph**, which captures relationships between entities (e.g., pedestrians, vehicles, sidewalks) in a structured form. Models like \textbf{LayoutGPT}~\cite{feng2023layoutgpt} and \textbf{ScenarioDiffuser}~\cite{yang2023scenariodiffuser} generate such layouts before rendering scenarios. These intermediate representations provide interpretable and editable control, making them especially useful in applications where spatial relationships must be explicitly preserved. Alternatively, some models generate **RGB images** or **videos** directly from prompts or constraints (e.g., \textbf{StoryDALL-E}~\cite{storydalle}), offering visually rich outputs but less flexibility for interaction or simulation. A few works also explore 3D scenario synthesis (e.g., \textbf{3D-FRONT}~\cite{fu20213dfront}) to create spatially accurate environments suitable for embodied AI agents or VR settings.
-
-Ultimately, the choice of output type influences the realism, controllability, and compatibility of generated scenarios. For road crossing simulations in VR, outputs that preserve semantic and spatial coherence—such as structured layouts or 3D scenario graphs—are more suitable than raw pixel-based generations, which may lack the granularity required for interaction or behavior modeling.
-
-
-3D scenario generation have been used to generate both indoor and outdoor scenarios.
-
-
-\subsubsection{Outdoor Scenario Generation}
-
-Outdoor 3D scenario generation techniques have been mostly used to model natural landscapes, urban settings, and other external environments for applications such as autonomous driving simulations.
-
-\subsection{4D Scenario Generation}
-
-4D scenario generation techniques are also capable to generate temporal changes (animation key frames). Existing systems can be classified into 3 categroies.
-
-\paragraph{Purely Constraint based} eg. scenic
-
-\paragraph{Multi-layered Perceptron based} eg. DNF
-
-\paragraph{Hexplane based} eg. DreamGaussian4D
 
 \subsection{Datasets}
 
-In this section, we review the datasets that are used to train the generative models for road crossing scenarios. 
+In this section, we review the datasets that are used to train generative models for road crossing scenarios. Table~\ref{tab:datasets} lists some of the datasets commonly used for training and evaluating generative models in urban environments.
 
-
-
-Creative3D, GTASynth etc.
-kitti
-waymo
-agroverse
-nuscenarios
-sind
+\begin{table}[ht]
+\centering
+\caption{Overview of selected datasets for foundation model-based scenario generation and analysis.}
+\label{tab:datasets}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{LiDAR} & \textbf{Traj.} & \textbf{3D} & \textbf{Region} & \textbf{Jam} \\
+\midrule
+Waymo Open       & 2020 & FPV        & \checkmark & \checkmark & \checkmark & U/S & \checkmark \\
+Agroverse        & 2023 & BEV/FPV    & \checkmark & \checkmark & \checkmark & R   & \checkmark \\
+nuScenarios      & 2022 & FPV        & \checkmark & \checkmark & \checkmark & U   & \checkmark \\
+SIND             & 2022 & BEV        & --         & --         & --         & --  & --         \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Validation}
 
+Table \ref{tab:validation} lists some of the common validation methods used to evaluate the performance of generative models in urban environments. These methods help assess the quality, realism, and diversity of the generated scenarios, ensuring that they meet the desired criteria for various applications.
+
+\begin{table*}[ht]
+\centering
+\caption{Qualitative and Quantitative Evaluation Methods for Road-Crossing Scenarios}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|p{2.5cm}|p{3.5cm}|p{6.2cm}|p{4.5cm}|}
+\hline
+\textbf{Method Type} & \textbf{Evaluation Approach} & \textbf{Description} & \textbf{Use Case} \\
+\hline
+\multirow{5}{*}{Qualitative} 
+& Human Review & Human experts assess realism, scenario diversity, and layout plausibility. & Validates human-perceived quality and applicability of the scene. \\
+\cline{2-4}
+& Scenario Visualization & 3D visual inspection or rendered videos showing pedestrian, vehicle, and environment interactions. & Helps detect unrealistic or unnatural behavior/configurations. \\
+\cline{2-4}
+& Surveys & Collects subjective feedback on realism, difficulty, or stress levels from participants. & Measures human-centric realism or emotional response. \\
+\cline{2-4}
+& Comparison & Compare agent trajectories to real-world data through video overlays or visual similarity. & Reveals unnatural agent behavior in familiar scenarios. \\
+\cline{2-4}
+& Failure Cases & -- & -- \\
+\hline
+
+\multirow{8}{*}{Quantitative} 
+\cline{2-4}
+& Social Compliance Metrics & Quantifies interactions: yielding, distancing, and social behavior compliance. & Measures how socially appropriate the behavior is. \\
+\cline{2-4}
+& Sim2Real Gap (Domain Distance) & Measures distance between real and synthetic data embeddings (e.g., t-SNE, FID). & Evaluates realism of simulated data. \\
+\cline{2-4}
+& Environment Diversity Metrics & Measures entropy or variation in traffic, layout, and weather settings. & Assesses generalizability and scenario richness. \\
+\hline
+\end{tabular}}
+\label{tab:validation}
+\end{table*}
+
+- Forecasting ? (AgentFormer)
+- XDE for agents?
+
+\section{Code}
+
+Currently tested models include:
+
+- Scenic~\cite{fremont2019scenic}
+- Magicdrive~\cite{gao2023magicdrive} (partially)
+- Metaurban/ScenrarioNET~\cite{wu2024metaurban}\cite{li2023scenarionet}
+- Threestudio (asset generation)~\cite{liu2023threestudio}
+
 \subsection{Limitations and Open Questions}
 
-- little attention to road topology in existing works (eg roadgen)
-- pedestrian ego using scenic or something?
-- nothing much in interaction "gamified part"
+Despite recent advances in 3D scenario generation for road environments, several key limitations and open challenges remain:
+
+\begin{itemize}
+    \item \textbf{Limited Attention to Road Topology:} Existing works often overlook detailed modeling of road topology, including multi-lane structures, traffic islands, and complex intersections. This limits the realism and diversity of the generated scenarios, especially for tasks requiring fine-grained spatial reasoning.
+
+    \item \textbf{Lack of Pedestrian-Centric Scenarios:} Current scenario generation methods primarily focus on vehicles as the ego agent. There are no models designed to generate scenarios where a pedestrian serves as the ego entity, which is critical for studying human-in-the-loop navigation, safety in crosswalks, and social navigation tasks.
+
+    \item \textbf{Absence of Interactive or Gamified Scenarios:} No models support the generation of interactive, gamified scenarios.
+\end{itemize}
 
 
 \section{Work Plan}
 
 
 
-
-
 \section*{Appendix}
 
-\section{Meeting notes}
+\section{Misc}
+
+\bibliographystyle{abbrv}
+\bibliography{main}
 
 \end{document}

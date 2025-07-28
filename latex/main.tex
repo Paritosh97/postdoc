@@ -86,6 +86,7 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     3D-SceneDreamer~\cite{zhang20243d} & Prompt to Image followed by Image to 3D & 3D Scene \\ \hline
     Work by Liu et al.~\cite{liu2024graph} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
+    SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
     \end{tabular}
 }
 \caption{Prompt-based Models for Urban Scenario Generation}
@@ -123,7 +124,7 @@ Multimodal inputs combine different types of data, such as text, images, and str
     \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
     CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
     UrbanWorld~\cite{shang2024urbanworld} & Layout data, text prompts, images & 3D Scenario \\ \hline
-    CityCraft~\cite{deng2024citycraft} & Prayout data and text prompts & 3D Scene \\ \hline
+    CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
     Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
     Dynamic City~\cite{bian2024dynamiccity} & Commands, Layouts, Object Inpainting and Trajectory & 3D Scenario \\ \hline
     GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or Images & 3D Scene \\ \hline
@@ -166,10 +167,10 @@ In this section, we review the datasets that are used to train generative models
 \toprule
 \textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{LiDAR} & \textbf{Traj.} & \textbf{3D} & \textbf{Region} & \textbf{Jam} \\
 \midrule
-Waymo Open       & 2020 & FPV        & \checkmark & \checkmark & \checkmark & U/S & \checkmark \\
-Agroverse        & 2023 & BEV/FPV    & \checkmark & \checkmark & \checkmark & R   & \checkmark \\
-nuScenarios      & 2022 & FPV        & \checkmark & \checkmark & \checkmark & U   & \checkmark \\
-SIND             & 2022 & BEV        & --         & --         & --         & --  & --         \\
+Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & \checkmark & \checkmark & \checkmark & U/S & \checkmark \\
+Agroverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & \checkmark & \checkmark & \checkmark & R   & \checkmark \\
+nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & \checkmark & \checkmark & \checkmark & U   & \checkmark \\
+SIND~\cite{xu2022drone}             & 2022 & BEV        & --         & --         & --         & --  & --         \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -229,7 +230,7 @@ Despite recent advances in 3D scenario generation for road environments, several
 \begin{itemize}
     \item \textbf{Limited Attention to Road Topology:} Existing works often overlook detailed modeling of road topology, including multi-lane structures, traffic islands, and complex intersections. This limits the realism and diversity of the generated scenarios, especially for tasks requiring fine-grained spatial reasoning.
 
-    \item \textbf{Lack of Pedestrian-Centric Scenarios:} Current scenario generation methods primarily focus on vehicles as the ego agent. There are no models designed to generate scenarios where a pedestrian serves as the ego entity, which is critical for studying human-in-the-loop navigation, safety in crosswalks, and social navigation tasks.
+    \item \textbf{Lack of Pedestrian-Centric Scenarios:}  Existing scenario-generation methods assume vehicles as the ego agent. No current models place a pedestrian in the ego role—yet this perspective vital for studying human-in-the-loop navigation, crosswalk safety, and social navigation. Developing a model that generates diverse pedestrian-centric scenarios will enable analysis of more safety-critical behaviors and edge-case interactions.
 
     \item \textbf{Absence of Interactive or Gamified Scenarios:} No models support the generation of interactive, gamified scenarios.
 \end{itemize}

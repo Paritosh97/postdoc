@@ -87,6 +87,10 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     Work by Liu et al.~\cite{liu2024graph} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
+    Surreal Drivers~\cite{jin2024surrealdriver} & Chain-of-thought prompts & 3D Scene \\ \hline
+    Work by Feng et al.~\cite{feng2025text} & Text prompts & 3D Scene \\ \hline
+    Text2nerf~\cite{zhang2024text2nerf} & Text prompts & 3D Scene \\ \hline
+    X-Scene~\cite{yang2025x} & Text prompts & 3D Scene \\ \hline
     \end{tabular}
 }
 \caption{Prompt-based Models for Urban Scenario Generation}
@@ -106,11 +110,13 @@ Layouts are structured representations of scenarios that capture the spatial rel
     CC3D~\cite{bahmani2023cc3d} & 2D Layout-based 3D Scene Generation & 3D Scene \\ \hline
     CityDreamer4D~\cite{xie2025citydreamer4d} & Uses a Layout Generator and a traffic scenario generator & 3D Scenario \\ \hline
     Infinicube~\cite{lu2024infinicube} & Text prompts, HD Maps and Bounding Boxes & 3D Scenario \\ \hline
+    Work by Zhang et al.~\cite{urbandiff} & BEV map & 3D Scene \\ \hline
+    UniScene~\cite{li2025uniscene} & BEV map & Multi-view video \\ \hline
+    Savkin et al.~\cite{savkin2021unsupervised} & Scenegraph & Scenario Image \\ \hline
     \end{tabular}
 \caption{Layout-based Models for Urban Scenario Generation}
 \label{tab:layout_based_models}
 \end{table}
-
 
 \subsubsection{Multimodal}
 
@@ -130,6 +136,10 @@ Multimodal inputs combine different types of data, such as text, images, and str
     GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or Images & 3D Scene \\ \hline
     MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
     Scene123~\cite{yang2024scene123} & Text prompt, Image or Text Description & 3D Scene \\ \hline
+    StreetScapes~\cite{deng2024streetscapes} & BEV and height map with support for prompts & Video \\ \hline
+    Urban Architect~\cite{lu2024urban} & 3D Layout and Text Prompts & 3D Scene \\ \hline
+    Urban World~\cite{shang2024urbanworld} & Layout (generation) and prompts (refinement) & 3D Scenario \\ \hline
+    Wonderplay~\cite{li2025wonderplay} & Image and action (physics) & 3D Video \\ \hline
     \end{tabular}}
 \caption{Multimodal Models for Urban Scenario Generation}
 \label{tab:multimodal_models}
@@ -165,19 +175,31 @@ In this section, we review the datasets that are used to train generative models
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{lccccccc}
 \toprule
-\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{LiDAR} & \textbf{Traj.} & \textbf{3D} & \textbf{Region} & \textbf{Jam} \\
+\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{Source}  & \textbf{Dimensionality} \\
 \midrule
-Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & \checkmark & \checkmark & \checkmark & U/S & \checkmark \\
-Agroverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & \checkmark & \checkmark & \checkmark & R   & \checkmark \\
-nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & \checkmark & \checkmark & \checkmark & U   & \checkmark \\
-SIND~\cite{xu2022drone}             & 2022 & BEV        & --         & --         & --         & --  & --         \\
+SIND~\cite{xu2022drone}             & 2022 & BEV        & --         & -- \\
+Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real & 3D  \\
+Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & \checkmark & \checkmark \\
+nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & \checkmark & \checkmark \\
+KITTI~\cite{geiger2012we}            & 2012 & FPV        & \checkmark & \checkmark \\
+Cityscapes~\cite{cordts2016cityscapes}      & 2016 & FPV        & \checkmark & \checkmark \\
+SemanticKITTI~\cite{behley2019semantickitti}      & 2019 & FPV        & \checkmark & \checkmark \\
+HoliCity~\cite{zhu2021holicity}          & 2020 & FPV        & \checkmark & \checkmark \\
+OmniCity~\cite{zhu2022omniscity}          & 2023 & FPV        & \checkmark & \checkmark \\
+KITTI-360~\cite{behley2019semantickitti}      & 2023 & FPV        & \checkmark & \checkmark \\
+GoogleEarth~\cite{googleearth}          & 2024 & FPV        & \checkmark & \checkmark \\
+OSM~\cite{openstreetmap}          & 2024 & BEV        & \checkmark & \checkmark \\
+CARLA~\cite{dosovitskiy2017carla}          & 2017 & BEV/FPV    & \checkmark & \checkmark \\
+Virtual-KITTI-2~\cite{cabon2020virtual}      & 2020 & FPV        & \checkmark & \checkmark \\
+CarlaSC~\cite{carla2021}          & 2022 & BEV/FPV    & \checkmark & \checkmark \\
+CityTopia~\cite{zhu2023citytopia}          & 2025 & BEV/FPV    & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Validation}
 
-Table \ref{tab:validation} lists some of the common validation methods used to evaluate the performance of generative models in urban environments. These methods help assess the quality, realism, and diversity of the generated scenarios, ensuring that they meet the desired criteria for various applications.
+Table \ref{tab:validation} lists common qualitative and quantitative validation methods used to evaluate the performance of generative models for urban road-crossing scenarios. These methods assess the quality, realism, and diversity of generated scenarios to ensure they fulfill their intended applications and research needs.
 
 \begin{table*}[ht]
 \centering
@@ -185,31 +207,32 @@ Table \ref{tab:validation} lists some of the common validation methods used to e
 \resizebox{\textwidth}{!}{
 \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{6.2cm}|p{4.5cm}|}
 \hline
-\textbf{Method Type} & \textbf{Evaluation Approach} & \textbf{Description} & \textbf{Use Case} \\
+\textbf{Method Type} & \textbf{Evaluation Approach} & \textbf{Description} & \textbf{Use Case} \
 \hline
-\multirow{5}{*}{Qualitative} 
-& Human Review & Human experts assess realism, scenario diversity, and layout plausibility. & Validates human-perceived quality and applicability of the scene. \\
+\multirow{5}{*}{Qualitative}
+& Human Review & Human experts assess realism, scenario diversity, and layout plausibility. & Validates human-perceived quality and applicability of the scene. \
 \cline{2-4}
-& Scenario Visualization & 3D visual inspection or rendered videos showing pedestrian, vehicle, and environment interactions. & Helps detect unrealistic or unnatural behavior/configurations. \\
+& Scenario Visualization & 3D visual inspection or rendered videos showing pedestrian, vehicle, and environment interactions. & Helps detect unrealistic or unnatural behavior/configurations. \
 \cline{2-4}
-& Surveys & Collects subjective feedback on realism, difficulty, or stress levels from participants. & Measures human-centric realism or emotional response. \\
+& Surveys & Collects subjective feedback on realism, perceived difficulty, or stress levels from participants. & Measures human-centric realism or emotional response. \
 \cline{2-4}
-& Comparison & Compare agent trajectories to real-world data through video overlays or visual similarity. & Reveals unnatural agent behavior in familiar scenarios. \\
+& Comparison & Compare scenario features (traffic density, gap opportunities, layout) to real-world statistics or distributions. & Validates realism by matching key scenario characteristics to empirical data. \
 \cline{2-4}
-& Failure Cases & -- & -- \\
+& Failure Cases & Identification and analysis of implausible or unsafe scenarios generated by the model. & Guides iterative model improvement. \
 \hline
 
-\multirow{8}{*}{Quantitative} 
+\multirow{8}{}{Quantitative}
+& Scenario Feature Statistics & Statistical analysis of scenario properties (traffic speed, number/duration of gaps, crosswalk presence, etc.). & Ensures generated scenarios span realistic distributions. \
 \cline{2-4}
-& Social Compliance Metrics & Quantifies interactions: yielding, distancing, and social behavior compliance. & Measures how socially appropriate the behavior is. \\
+& Coverage and Diversity Metrics & Measures distributional entropy or spread of key attributes across all generated scenarios. & Assesses generalizability, scenario variety, and model's exploration of edge cases. \
 \cline{2-4}
-& Sim2Real Gap (Domain Distance) & Measures distance between real and synthetic data embeddings (e.g., t-SNE, FID). & Evaluates realism of simulated data. \\
+& Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \
 \cline{2-4}
-& Environment Diversity Metrics & Measures entropy or variation in traffic, layout, and weather settings. & Assesses generalizability and scenario richness. \\
+& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, or FID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
 \hline
 \end{tabular}}
 \label{tab:validation}
-\end{table*}
+\end{table}
 
 - Forecasting ? (AgentFormer)
 - XDE for agents?
@@ -220,7 +243,7 @@ Currently tested models include:
 
 - Scenic~\cite{fremont2019scenic}
 - Magicdrive~\cite{gao2023magicdrive} (partially)
-- Metaurban/ScenrarioNET~\cite{wu2024metaurban}\cite{li2023scenarionet}
+- Metaurban/ScenarioNET~\cite{wu2024metaurban}\cite{li2023scenarionet}
 - Threestudio (asset generation)~\cite{liu2023threestudio}
 
 \subsection{Limitations and Open Questions}

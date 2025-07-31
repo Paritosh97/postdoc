@@ -129,7 +129,6 @@ Multimodal inputs combine different types of data, such as text, images, and str
     \hline
     \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
     CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
-    UrbanWorld~\cite{shang2024urbanworld} & Layout data, text prompts, images & 3D Scenario \\ \hline
     CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
     Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
     Dynamic City~\cite{bian2024dynamiccity} & Commands, Layouts, Object Inpainting and Trajectory & 3D Scenario \\ \hline
@@ -228,7 +227,7 @@ Table \ref{tab:validation} lists common qualitative and quantitative validation 
 \cline{2-4}
 & Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \
 \cline{2-4}
-& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, or FID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
+& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
 \hline
 \end{tabular}}
 \label{tab:validation}

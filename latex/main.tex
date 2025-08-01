@@ -227,7 +227,8 @@ Table \ref{tab:validation} lists common qualitative and quantitative validation 
 \cline{2-4}
 & Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \
 \cline{2-4}
-& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
+& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID/KID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
+* Controllability Metrics & Measures how well the model can generate scenarios based on prompts (CLIP, BLIP, VQA, etc.) & Assesses controllability and flexibility of the generative model. \
 \hline
 \end{tabular}}
 \label{tab:validation}
@@ -255,6 +256,8 @@ Despite recent advances in 3D scenario generation for road environments, several
     \item \textbf{Lack of Pedestrian-Centric Scenarios:}  Existing scenario-generation methods assume vehicles as the ego agent. No current models place a pedestrian in the ego role—yet this perspective vital for studying human-in-the-loop navigation, crosswalk safety, and social navigation. Developing a model that generates diverse pedestrian-centric scenarios will enable analysis of more safety-critical behaviors and edge-case interactions.
 
     \item \textbf{Absence of Interactive or Gamified Scenarios:} No models support the generation of interactive, gamified scenarios.
+
+    \item \textbf{Diffusion guided based on ontology:} Specifying the ontology allows us better controllability of the interaction as well as the scene. Existing models focus on generation from scene graph but not ontology.
 \end{itemize}
 
 

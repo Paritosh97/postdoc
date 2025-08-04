@@ -247,14 +247,15 @@ Currently tested models include:
 
 \subsection{Limitations and Open Questions}
 
-Despite recent advances in 3D scenario generation for road environments, several key limitations and open challenges remain:
+Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring} explore pedestrian behaviour but rely on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. Some open questions include:
+
 
 \begin{itemize}
-    \item \textbf{Limited Attention to Road Topology:} Existing works often overlook detailed modeling of road topology, including multi-lane structures, traffic islands, and complex intersections. This limits the realism and diversity of the generated scenarios, especially for tasks requiring fine-grained spatial reasoning.
+    \item \textbf{How to generate interactions based on a given ontology:} 
 
-    \item \textbf{Lack of Pedestrian-Centric Scenarios:}  Existing scenario-generation methods assume vehicles as the ego agent. No current models place a pedestrian in the ego role—yet this perspective vital for studying human-in-the-loop navigation, crosswalk safety, and social navigation. Developing a model that generates diverse pedestrian-centric scenarios will enable analysis of more safety-critical behaviors and edge-case interactions.
+    \item \textbf{How to create a scenario which allows for diverse pedestrian behaviors:} 
 
-    \item \textbf{Absence of Interactive or Gamified Scenarios:} No models support the generation of interactive, gamified scenarios.
+    \item \textbf{How to evaluate interactive scenarios:} 
 \end{itemize}
 
 

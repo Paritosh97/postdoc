@@ -240,15 +240,26 @@ Table \ref{tab:validation} lists common qualitative and quantitative validation 
 
 Currently tested models include:
 
-- Scenic~\cite{fremont2019scenic}
-- Magicdrive~\cite{gao2023magicdrive} (partially)
-- Metaurban/ScenarioNET~\cite{wu2024metaurban}\cite{li2023scenarionet}
-- Threestudio (asset generation)~\cite{liu2023threestudio}
+\subsection{Scenic}
 
-\subsection{Limitations and Open Questions}
+Scenic~\cite{fremont2019scenic} is a probabilistic programming language designed for scenario generation. It allows users to define scenarios using constraints and rules, which can then be rendered in environments like CARLA~\cite{dosovitskiy2017carla}. 
 
-Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring} explore pedestrian behaviour but rely on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. Some open questions include:
+\subsection{MagicDrive}
 
+MagicDrive~\cite{gao2023magicdrive} is a framework that combines large language models (LLMs) with 3D scene generation. It uses prompts to guide the generation of urban scenarios, allowing for the creation of diverse and realistic environments. The framework can generate scenarios in CARLA and supports various input modalities, including text prompts and bounding boxes.
+
+\subsection{MetaUrban/ScenarioNET}
+
+MetaUrban~\cite{wu2024metaurban} and ScenarioNET~\cite{li2023scenarionet} are frameworks that focus on generating urban scenarios using a combination of procedural and data-driven approaches. They allow for the creation of complex urban environments with a focus on pedestrian and vehicle interactions.
+
+\subsection{Threestudio}
+
+Threestudio~\cite{liu2023threestudio} is a framework for generating 3D assets and environments. It uses a combination of procedural and data-driven techniques to create realistic 3D models and scenes, which can be used in various applications, including virtual reality and gaming.
+
+
+\subsection{Problem and Open Questions}
+
+Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring}  use a fixed set of real and synthetic scenarios to explore pedestrian behaviour. They however rely on on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. The  open questions are then:
 
 \begin{itemize}
     \item \textbf{How to generate interactions based on a given ontology:} 

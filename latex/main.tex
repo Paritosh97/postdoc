@@ -84,11 +84,10 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
     TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
     3D-SceneDreamer~\cite{zhang20243d} & Prompt to Image followed by Image to 3D & 3D Scene \\ \hline
-    Work by Liu et al.~\cite{liu2024graph} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
+    GraphCanvas3D~\cite{liu2024graph} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scene graph and then a 3D scene & 3D Scene \\ \hline
     SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
     Surreal Drivers~\cite{jin2024surrealdriver} & Chain-of-thought prompts & 3D Scene \\ \hline
-    Work by Feng et al.~\cite{feng2025text} & Text prompts & 3D Scene \\ \hline
     Text2nerf~\cite{zhang2024text2nerf} & Text prompts & 3D Scene \\ \hline
     X-Scene~\cite{yang2025x} & Text prompts & 3D Scene \\ \hline
     \end{tabular}
@@ -146,21 +145,17 @@ Multimodal inputs combine different types of data, such as text, images, and str
 
 \subsection{Generation Paradigms}
 
-Generative models can be broadly classified into two paradigms: \textbf{procedural} and \textbf{data-driven}. Procedural approaches rely on predefined rules or constraints to generate scenarios, while data-driven methods leverage machine learning techniques to learn from existing data and generate new scenarios based on learned patterns.
+This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and diffusion-based approaches.
 
 \subsubsection{Procedural Approaches}
 
-Procedural approaches use a set of rules or algorithms to generate scenarios.
+Procedural approaches use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}. Variations of Scenic have been introduced to allow for more complex scenario generation, such as ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene}, which use natural language prompts to define scenarios. MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework that combines procedural and declarative approaches to create urban micromobility scenarios. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}.
 
-\subsubsection{Data-driven Approaches}
+Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a procedural scenario might create a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings and other elements, but no real crossroad would exist in the world that conforms to these specifications.
 
-Data-driven  approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
+\subsubsection{Generative Approaches}
 
-\paragraph{GANs} 
-
-\paragraph{Autoregressive} 
-
-\paragraph{Diffusion} 
+Generative approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
 
 
 \subsection{Datasets}
@@ -239,7 +234,7 @@ Table \ref{tab:validation} lists common qualitative and quantitative validation 
 
 \section{Code}
 
-Currently tested models include:
+Currently tested code include:
 
 \subsection{Scenic}
 
@@ -255,21 +250,25 @@ MetaUrban~\cite{wu2024metaurban} and ScenarioNET~\cite{li2023scenarionet} are fr
 
 \subsection{Threestudio}
 
+Threestudio~\cite{liu2023threestudio} is a collection of 3D generative techniques. It uses a combination of procedural and data-driven techniques to create realistic 3D models and scenes, which can be used in various applications, including virtual reality and gaming.
+
+\subsection{Urban Architect}
+
 Threestudio~\cite{liu2023threestudio} is a framework for generating 3D assets and environments. It uses a combination of procedural and data-driven techniques to create realistic 3D models and scenes, which can be used in various applications, including virtual reality and gaming.
+
 
 
 \subsection{Problem and Open Questions}
 
-Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring}  use a fixed set of real and synthetic scenarios to explore pedestrian behaviour. They however rely on on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. The  open questions are then:
+Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring} use a set of real and synthetic scenarios to explore pedestrian behaviour in VR. They however rely on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. The  open questions are then:
 
 \begin{itemize}
-    \item \textbf{How to generate interactions based on a given ontology:} 
+    \item \textbf{What is the best way to ground an interactive scenario for a generative model:} Based on the literature and continuing work by Wu et al.~\cite{wu2022designing}, we can use ontological grounding, where we define a scenegraph that captures the relationships between different elements in the scenario, such as pedestrians, vehicles, and the environment. A good example of interactive scenegraph editing and then 3D scene generation is shown in the demo video (\url{https://www.youtube.com/watch?v=4YRTydsv-qg}) of GraphCanvas3D~\cite{liu2024graph}.
 
-    \item \textbf{How to create a scenario which allows for diverse pedestrian behaviors:} 
+    \item \textbf{How do we create these scenarios allowing for diverse pedestrian behaviors:} 
 
     \item \textbf{How to evaluate interactive scenarios:} 
 \end{itemize}
-
 
 \section{Work Plan}
 
@@ -278,6 +277,26 @@ Most existing scenario-generation methods are vehicle-centric, focusing primaril
 \section*{Appendix}
 
 \section{Misc}
+
+\subsection{Meeting Notes}
+
+\subsection{01/08/2025}    
+
+\begin{itemize}
+    \item \textbf{Clarify Image Usage:} Specify what kinds of images are being referred to in the input for the models (e.g., diagrams, real-world photos, layouts), and justify their relevance.
+    
+    \item \textbf{Add details on Scene Graph:} Provide more information about the scene graphs (e.g., format, usage, etc.) in the context of the models.
+    
+    \item \textbf{Avoid Overly High-Level Descriptions:} Some explanations are too abstract — add concrete examples and ensure essential implementation and interaction details are included.
+    
+    \item \textbf{Improve Focus on Vocabulary:} Review and refine terminology. Ensure technical or domain-specific terms are clearly defined and used consistently.
+    
+    \item \textbf{Identify and Specify Missing Interaction Types:} Clearly outline which user/system interactions are missing or underexplored.
+    
+    \item \textbf{Sharpen Research Question (RQ):} Make the RQ more concrete and closely tied to your data, methods, and intended contributions.
+    
+    \item \textbf{Better Categorization of Literature:} Reorganize cited papers using clear categories such as research themes, methodologies, etc.
+\end{itemize}
 
 \bibliographystyle{abbrv}
 \bibliography{main}

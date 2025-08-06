@@ -6,7 +6,7 @@
 \usepackage{booktabs}  
 
 \title{Scenario Generation for Interactive Urban Environments}
-%\author{Paritosh Sharma, Hui-Yin Wu}
+\author{Paritosh Sharma, Hui-Yin Wu}
 \date{July 2025}
 
 \usepackage{graphicx}
@@ -151,11 +151,27 @@ This section discusses the different paradigms used for generating scenarios in 
 
 Procedural approaches use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}. Variations of Scenic have been introduced to allow for more complex scenario generation, such as ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene}, which use natural language prompts to define scenarios. MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework that combines procedural and declarative approaches to create urban micromobility scenarios. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}.
 
-Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a procedural scenario might create a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings and other elements, but no real crossroad would exist in the world that conforms to these specifications.
+Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings and other elements. However, no real crossroad would exist in the world that conforms to these specifications.
 
 \subsubsection{Generative Approaches}
 
-Generative approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more diverse and realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
+Generative approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
+
+\paragraph{Diffusion-based techniques} have shown more promise than other generative models such as autoregressors or GANs for 3D generation. These models work by iteratively refining a noisy input to produce a coherent output. They can be trained on large datasets of urban environments, allowing them to capture the complex relationships between different elements in the scene. Table \ref{tab:diffusion_based_models} lists some of the recent diffusion-based models for scenario generation.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    
+    \end{tabular}}
+\caption{Diffusion-based Models for Urban Scenario Generation}
+\label{tab:diffusion_based_models}
+\end{table}
+
+
 
 
 \subsection{Datasets}
@@ -175,59 +191,65 @@ SIND~\cite{xu2022drone}             & 2022 & BEV        & --         & -- \\
 Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real & 3D  \\
 Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & \checkmark & \checkmark \\
 nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & \checkmark & \checkmark \\
-KITTI~\cite{geiger2012we}            & 2012 & FPV        & \checkmark & \checkmark \\
-Cityscapes~\cite{cordts2016cityscapes}      & 2016 & FPV        & \checkmark & \checkmark \\
-SemanticKITTI~\cite{behley2019semantickitti}      & 2019 & FPV        & \checkmark & \checkmark \\
-HoliCity~\cite{zhu2021holicity}          & 2020 & FPV        & \checkmark & \checkmark \\
-OmniCity~\cite{zhu2022omniscity}          & 2023 & FPV        & \checkmark & \checkmark \\
-KITTI-360~\cite{behley2019semantickitti}      & 2023 & FPV        & \checkmark & \checkmark \\
+KITTI~\cite{Geiger2012AreWR}            & 2012 & FPV        & \checkmark & \checkmark \\
+Cityscapes~\cite{Cordts2016Cityscapes}      & 2016 & FPV        & \checkmark & \checkmark \\
+SemanticKITTI~\cite{behley2019iccv}      & 2019 & FPV        & \checkmark & \checkmark \\
+HoliCity~\cite{zhou2020holicity}          & 2020 & FPV        & \checkmark & \checkmark \\
+OmniCity~\cite{li2023omnicity}          & 2023 & FPV        & \checkmark & \checkmark \\
+KITTI-360~\cite{liao2022kitti360}      & 2023 & FPV        & \checkmark & \checkmark \\
 GoogleEarth~\cite{googleearth}          & 2024 & FPV        & \checkmark & \checkmark \\
 OSM~\cite{openstreetmap}          & 2024 & BEV        & \checkmark & \checkmark \\
-CARLA~\cite{dosovitskiy2017carla}          & 2017 & BEV/FPV    & \checkmark & \checkmark \\
-Virtual-KITTI-2~\cite{cabon2020virtual}      & 2020 & FPV        & \checkmark & \checkmark \\
-CarlaSC~\cite{carla2021}          & 2022 & BEV/FPV    & \checkmark & \checkmark \\
+CARLA~\cite{Dosovitskiy17}          & 2017 & BEV/FPV    & \checkmark & \checkmark \\
+Virtual-KITTI-2~\cite{cabon2020vkitti2}      & 2020 & FPV        & \checkmark & \checkmark \\
+CarlaSC~\cite{carlaSC2022}          & 2022 & BEV/FPV    & \checkmark & \checkmark \\
 CityTopia~\cite{zhu2023citytopia}          & 2025 & BEV/FPV    & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+
+
 \subsection{Validation}
 
 Table \ref{tab:validation} lists common qualitative and quantitative validation methods used to evaluate the performance of generative models for urban road-crossing scenarios. These methods assess the quality, realism, and diversity of generated scenarios to ensure they fulfill their intended applications and research needs.
-
-\begin{table*}[ht]
+\begin{table}[ht]
 \centering
 \caption{Qualitative and Quantitative Evaluation Methods for Road-Crossing Scenarios}
 \resizebox{\textwidth}{!}{
 \begin{tabular}{|p{2.5cm}|p{3.5cm}|p{6.2cm}|p{4.5cm}|}
 \hline
-\textbf{Method Type} & \textbf{Evaluation Approach} & \textbf{Description} & \textbf{Use Case} \
-\hline
-\multirow{5}{*}{Qualitative}
-& Human Review & Human experts assess realism, scenario diversity, and layout plausibility. & Validates human-perceived quality and applicability of the scene. \
-\cline{2-4}
-& Scenario Visualization & 3D visual inspection or rendered videos showing pedestrian, vehicle, and environment interactions. & Helps detect unrealistic or unnatural behavior/configurations. \
-\cline{2-4}
-& Surveys & Collects subjective feedback on realism, perceived difficulty, or stress levels from participants. & Measures human-centric realism or emotional response. \
-\cline{2-4}
-& Comparison & Compare scenario features (traffic density, gap opportunities, layout) to real-world statistics or distributions. & Validates realism by matching key scenario characteristics to empirical data. \
-\cline{2-4}
-& Failure Cases & Identification and analysis of implausible or unsafe scenarios generated by the model. & Guides iterative model improvement. \
+\textbf{Method Type} & \textbf{Evaluation Approach} & \textbf{Description} & \textbf{Use Case} \\
 \hline
 
-\multirow{8}{}{Quantitative}
-& Scenario Feature Statistics & Statistical analysis of scenario properties (traffic speed, number/duration of gaps, crosswalk presence, etc.). & Ensures generated scenarios span realistic distributions. \
+\multirow{5}{*}{Qualitative}
+& Human Review & Human experts assess realism, scenario diversity, and layout plausibility. & Validates human-perceived quality and applicability of the scene. \\
 \cline{2-4}
-& Coverage and Diversity Metrics & Measures distributional entropy or spread of key attributes across all generated scenarios. & Assesses generalizability, scenario variety, and model's exploration of edge cases. \
+& Scenario Visualization & 3D visual inspection or rendered videos showing pedestrian, vehicle, and environment interactions. & Helps detect unrealistic or unnatural behavior/configurations. \\
 \cline{2-4}
-& Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \
+& Surveys & Collects subjective feedback on realism, perceived difficulty, or stress levels from participants. & Measures human-centric realism or emotional response. \\
 \cline{2-4}
-& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID/KID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \
-* Controllability Metrics & Measures how well the model can generate scenarios based on prompts (CLIP, BLIP, VQA, etc.) & Assesses controllability and flexibility of the generative model. \
+& Comparison & Compare scenario features (traffic density, gap opportunities, layout) to real-world statistics or distributions. & Validates realism by matching key scenario characteristics to empirical data. \\
+\cline{2-4}
+& Failure Cases & Identification and analysis of implausible or unsafe scenarios generated by the model. & Guides iterative model improvement. \\
 \hline
-\end{tabular}}
+
+\multirow{5}{*}{Quantitative}
+& Scenario Feature Statistics & Statistical analysis of scenario properties (traffic speed, number/duration of gaps, crosswalk presence, etc.). & Ensures generated scenarios span realistic distributions. \\
+\cline{2-4}
+& Coverage and Diversity Metrics & Measures distributional entropy or spread of key attributes across all generated scenarios. & Assesses generalizability, scenario variety, and model's exploration of edge cases. \\
+\cline{2-4}
+& Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \\
+\cline{2-4}
+& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID/KID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \\
+\cline{2-4}
+& Controllability Metrics & Measures how well the model can generate scenarios based on prompts (CLIP, BLIP, VQA, etc.) & Assesses controllability and flexibility of the generative model. \\
+\hline
+
+\end{tabular}
+}
 \label{tab:validation}
 \end{table}
+
 
 - Forecasting ? (AgentFormer)
 - XDE for agents?
@@ -238,25 +260,27 @@ Currently tested code include:
 
 \subsection{Scenic}
 
-Scenic~\cite{fremont2019scenic} is a probabilistic programming language designed for scenario generation. It allows users to define scenarios using constraints and rules, which can then be rendered in environments like CARLA~\cite{dosovitskiy2017carla}. 
+Easy to setup and run since the repository is well maintained.
 
 \subsection{MagicDrive}
 
-MagicDrive~\cite{gao2023magicdrive} is a framework that combines large language models (LLMs) with 3D scene generation. It uses prompts to guide the generation of urban scenarios, allowing for the creation of diverse and realistic environments. The framework can generate scenarios in CARLA and supports various input modalities, including text prompts and bounding boxes.
+Had issues running due to model size and GPU memory limitations. Also realised only 2D video generation works for now since the code is not uploaded yet for 3D generation.
 
 \subsection{MetaUrban/ScenarioNET}
 
-MetaUrban~\cite{wu2024metaurban} and ScenarioNET~\cite{li2023scenarionet} are frameworks that focus on generating urban scenarios using a combination of procedural and data-driven approaches. They allow for the creation of complex urban environments with a focus on pedestrian and vehicle interactions.
+Easy to setup and run since docker container is available and working.
 
 \subsection{Threestudio}
 
-Threestudio~\cite{liu2023threestudio} is a collection of 3D generative techniques. It uses a combination of procedural and data-driven techniques to create realistic 3D models and scenes, which can be used in various applications, including virtual reality and gaming.
+Threestudio~\cite{liu2023threestudio} is a collection of 3D generative techniques. Easy to setup and run since docker container is provided. It is well maintained by the community and has a good documentation. Thus, good to test different generative techniques for 3D models.
+
+\subsection{City Dreamer}
+
+CityDreamer4D~\cite{xie2025citydreamer4d} tried testing the 3D branch with static scenes but encountered issues with the container.
 
 \subsection{Urban Architect}
 
-Threestudio~\cite{liu2023threestudio} is a framework for generating 3D assets and environments. It uses a combination of procedural and data-driven techniques to create realistic 3D models and scenes, which can be used in various applications, including virtual reality and gaming.
-
-
+Urban Architect~\cite{lu2024urban} could be useful as a starting point for generating the static urban scenario using diffusion models and score distillation sampling. For now the container has dependency issues with pytorch3d.
 
 \subsection{Problem and Open Questions}
 

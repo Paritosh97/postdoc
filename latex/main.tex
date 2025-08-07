@@ -157,7 +157,7 @@ Even though procedural approaches can be highly customizable and allow for preci
 
 Generative approaches leverage deep learning techniques to learn complex patterns and relationships in data, enabling the generation of scenarios that are more realistic. These models can learn from large datasets of urban environments, capturing the inherent variability and uncertainty present in real-world scenarios. We can further classify these models into the following categories:
 
-\paragraph{Diffusion-based techniques} have shown more promise than other generative models such as autoregressors or GANs for 3D generation. These models work by iteratively refining a noisy input to produce a coherent output. They can be trained on large datasets of urban environments, allowing them to capture the complex relationships between different elements in the scene. Table \ref{tab:diffusion_based_models} lists some of the recent diffusion-based models for scenario generation.
+\paragraph{Diffusion-based techniques} have shown more promise than other generative models such as autoregressors or GANs for 3D generation. These models work by iteratively refining a noisy input to produce a coherent output. They can be trained on large datasets of urban environments, allowing them to capture the complex relationships between different elements in the scene. Table~\ref{tab:diffusion_based_models} lists some of the recent diffusion-based models for scenario generation.
 
 \begin{table}[ht]
 \centering
@@ -185,24 +185,20 @@ In this section, we review the datasets that are used to train generative models
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{lccccccc}
 \toprule
-\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{Source}  & \textbf{Dimensionality} \\
+\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{Source} \\
 \midrule
-SIND~\cite{xu2022drone}             & 2022 & BEV        & --         & -- \\
-Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real & 3D  \\
-Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & \checkmark & \checkmark \\
-nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & \checkmark & \checkmark \\
-KITTI~\cite{Geiger2012AreWR}            & 2012 & FPV        & \checkmark & \checkmark \\
-Cityscapes~\cite{Cordts2016Cityscapes}      & 2016 & FPV        & \checkmark & \checkmark \\
-SemanticKITTI~\cite{behley2019iccv}      & 2019 & FPV        & \checkmark & \checkmark \\
-HoliCity~\cite{zhou2020holicity}          & 2020 & FPV        & \checkmark & \checkmark \\
-OmniCity~\cite{li2023omnicity}          & 2023 & FPV        & \checkmark & \checkmark \\
-KITTI-360~\cite{liao2022kitti360}      & 2023 & FPV        & \checkmark & \checkmark \\
-GoogleEarth~\cite{googleearth}          & 2024 & FPV        & \checkmark & \checkmark \\
-OSM~\cite{openstreetmap}          & 2024 & BEV        & \checkmark & \checkmark \\
-CARLA~\cite{Dosovitskiy17}          & 2017 & BEV/FPV    & \checkmark & \checkmark \\
-Virtual-KITTI-2~\cite{cabon2020vkitti2}      & 2020 & FPV        & \checkmark & \checkmark \\
-CarlaSC~\cite{carlaSC2022}          & 2022 & BEV/FPV    & \checkmark & \checkmark \\
-CityTopia~\cite{zhu2023citytopia}          & 2025 & BEV/FPV    & \checkmark & \checkmark \\
+SIND~\cite{xu2022drone}             & 2022 & BEV        & Real         \\
+Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real  \\
+Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & Real \\
+nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & Real \\
+KITTI~\cite{geiger2012we}            & 2012 & FPV        & Real \\
+Cityscapes~\cite{cordts2016cityscapes}      & 2016 & FPV        & .. \\
+HoliCity~\cite{zhou2020holicity}          & 2020 & FPV        & .. \\
+OmniCity~\cite{li2023omnicity}          & 2023 & FPV        & ..  \\
+GoogleEarth~\cite{xie2024citydreamer}          & 2024 & BEV        & Real  \\
+OSM~\cite{xie2024citydreamer}          & 2024 & BEV        & Real \\
+CarlaSC~\cite{wilson2022motionsc}          & 2022 & BEV/FPV    & Synthetic \\
+CityTopia~\cite{xie2025citydreamer4d}          & 2025 & BEV/FPV    & .. \\
 \bottomrule
 \end{tabular}
 \end{table}

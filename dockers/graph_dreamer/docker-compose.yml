@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  graphdreamer:
+    build: .
+    container_name: graphdreamer
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - .:/workspace/GraphDreamer
+    stdin_open: true
+    tty: true

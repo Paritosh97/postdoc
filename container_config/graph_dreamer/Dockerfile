@@ -44,11 +44,13 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
 USER ${USER_NAME}
 
 RUN pip install --upgrade pip setuptools==69.5.1 ninja
-RUN pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch==2.7+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
 # Install nerfacc and tiny-cuda-nn before installing requirements.txt
 # because these two installations are time consuming and error prone
 RUN pip install git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2
 RUN pip install git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
+RUN pip install typeguard libigl==2.5 numpy==1.24.4 opencv-python==4.7.0.72
+
 
 # Clone the repository
 WORKDIR /workspace

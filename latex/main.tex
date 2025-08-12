@@ -21,6 +21,7 @@
 \usepackage{geometry} 
 \usepackage{adjustbox}
 
+\usetikzlibrary{calc, arrows.meta, positioning, shapes.geometric}
 
 \begin{document}
 
@@ -80,7 +81,7 @@ Prompts are textual cues provided to the generative model to guide the scenario 
     ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
     ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
     LayoutGPT~\cite{feng2023layoutgpt} & Prompts converted to CSS-like Layout Formatting by LLMs & Layout Representation \\ \hline
-    ChatDyn~\cite{wei2024chatdyn} & LLM-based layout planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
+    ChatDyn~\cite{wei2024chatdyn} & LLM-based planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
     Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
     TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
     3D-SceneDreamer~\cite{zhang20243d} & Prompt to point-of-view image followed by image to 3D & 3D Scene \\ \hline
@@ -145,25 +146,25 @@ Multimodal inputs combine different types of data, such as text, images, and str
 
 \subsection{Generation Paradigms}
 
-This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and diffusion-based approaches.
+This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and neural generative approaches.
 
 \subsubsection{Procedural Approaches}
 
-\paragraph{Purely Procedural Generation}
+\paragraph{Classic Procedural Generation} use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}, which allows users to define scenarios using a probabilistic programming language. Similarly, MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework to create urban micromobility scenarios using the Metadrive~\cite{li2022metadrive} simulator. 
 
-Procedural approaches use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}. Variations of Scenic have been introduced to allow for more complex scenario generation, such as ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene}, which use natural language prompts to define scenarios. MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework that combines procedural and declarative approaches to create urban micromobility scenarios. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario using an LLM in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}. CityX~\cite{zhang2024cityx} is multi-agent framework that uses LLM to assemble assets using the procedural content generation (PCG) library as well as plan actions for the agents in the scenario.
+\paragraph{LLM-based Procedural Generation} can be used to enhance procedural generation with natural language understanding. For example, ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene} use LLMs to generate scenic code from prompts and then define the scenarios in Scenic. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario using an LLM in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}. CityX~\cite{zhang2024cityx} is multi-agent framework that uses LLM to assemble assets using the procedural content generation (PCG) library as well as plan actions for the agents in the scenario.
 
-\paragraph{LLM-based Procedural Generation}
-
-Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings and other elements. However, no real crossroad would exist in the world that conforms to these specifications.
+Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a scenario with a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings. However, no real crossroad would exist in the world that conforms to these specifications.
 
 \subsubsection{Partially Generative Approaches}
 
-Partially generative approaches use generative models such as GANs, VAEs or Diffusion~\cite{} to capture the static elements in the scene but use procedural techniques to generate dynamic elements. These can be further divided into the following categories:
+Partially generative approaches use generative models such as GANs, VAEs or Diffusion models to capture the static elements in the scene but use procedural techniques to generate dynamic elements. These can be further divided into the following categories:
 
-\paragraph{Procedurally Guided Generative Models} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm.
+\paragraph{Procedural Environments with Generative Dynamics} generate the static aspects of the environment using procedural techniques, while the dynamic aspects such as vehicles and pedestrians are generated using generative models. For example, Chatdyn~\cite{wei2024chatdyn} uses CARLA~\cite{dosovitskiy2017carla} to construct the traffic environment, then populate it with pedestrians and vehicles, each equipped with an LLM agent to generate a high-level scenario plan. This high-level plan is then executed in a low-level PedExecutor using Text2Motion~\cite{guo2024momask} for pedestrians and VehExectutor using a physics-based, history-aware reinforcement learning controller to produce vehicle trajectories.
 
-CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
+\paragraph{Procedural Dynamics with Generative Environments} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld~\cite{shang2024urbanworld} converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm. CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
+
+
 %... ... UrbanArchitect~\cite{lu2024urban}... GraphDreamer~\cite{gao2024graphdreamer}
 
 \subsubsection{Fully Generative Approaches}
@@ -276,24 +277,81 @@ Urban Architect~\cite{lu2024urban} - having some dependency issues with pytorch3
 
 CLIP~\cite{radford2021learning} is a model that can be used to evaluate the quality of generated scenarios. Tested on colab with the pretrained ViT model.
 
-\section{Problem and Open Questions}
+\subsection{GraphDreamer}
 
-Most existing scenario-generation methods are vehicle-centric, focusing primarily on creating synthetic scenarios to train autonomous driving agents. A few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring} use a set of real and synthetic scenarios to explore pedestrian behaviour in VR. They however rely on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios can be a significant contribution. The  open questions are then:
+GraphDreamer~\cite{gao2024graphdreamer} - ongoing
 
-\begin{itemize}
-    \item \textbf{How to guide the diffusion (variational distillation) using scene graphs for generating urban scenarios?} Based on the literature and continuing work by Wu et al.~\cite{wu2022designing}, we can use ontological grounding, where we define a scenegraph that captures the relationships between different elements in the scenario, such as pedestrians, vehicles, and the environment. Scenegraph editing for a static scene generation is already shown in works like GraphCanvas3D~\cite{liu2024graph} (\url{https://www.youtube.com/watch?v=4YRTydsv-qg}). The question then is how to use this scenegraph to guide the diffusion process (which mostly uses variational score distillation sampling for text to 3D) for generating dynamic scenarios.
+\section{Problem and Research Question}
 
-    \item \textbf{How do we create these scenarios allowing for diverse pedestrian behaviors:} %TODO missing interactions in previous models
+Most existing scenario-generation methods are vehicle-centric, focusing primarily on generating novel scenarios to train autonomous driving agents. However, these works fail to capture a diverse set of pedestrian behaviour which can be used to enhance trajectory prediction and interaction modeling. For this, a few works such as Jaywalkingvr~\cite{mukoya2024jaywalkervr} and Creative3D\cite{wu2023exploring} use a set of real and synthetic scenarios to explore human-in-the-loop pedestrian behaviour in VR. They however rely on a fixed set of scenarios and interactions. Thus, developing a model that generates diverse pedestrian-centric scenarios is of great interest. The open question is then, 
 
-    \item \textbf{How to evaluate interactive scenarios:} 
-\end{itemize}
+"How can pedestrian-centric urban scenarios for human-in-the-loop pedestrian simulation be improved to produce diverse interactions that enhance trajectory prediction and interaction modeling in complex and varied urban situations?"
+
 
 \section{Work Plan}
 
-Insights:
-- Use scenegraphs to guide the generation process.
-- Score distillation for aspects such as terrain, road surface, and other static elements.
-- Predefined assets for pedestrians and vehicles, etc (like MetaUrban)
+%input
+example dynamic scenegraph structured
+
+\begin{tikzpicture}[
+  node distance=5cm and 4cm,
+  box/.style={
+    rectangle, draw, rounded corners, 
+    minimum width=6cm, minimum height=3cm,
+    text width=6cm, align=left, font=\small,
+    fill=gray!10
+  },
+  >={Stealth[length=3mm, width=2mm]}
+]
+
+% Nodes
+\node[box] (Pedestrian_1) {
+  \textbf{Pedestrian\_1}\\
+  ontology: Pedestrian\\
+  trajectory: (2,0) $\to$ (4,2)\\
+  speed: 1.2 m/s\\
+  start\_action: Standing\\
+  end\_action: WalkingOffRoad
+};
+
+\node[box, right=of Pedestrian_1] (Car_1) {
+  \textbf{Car\_1}\\
+  ontology: Car\\
+  trajectory: (0,5) $\to$ (10,5)\\
+  phase1: Stopped until Pedestrian\_1.y $>$ 2\\
+  phase2: Accelerating 0–5 m/s
+};
+
+\node[box, below=of $(Pedestrian_1)!0.5!(Car_1)$] (Road_1) {
+  \textbf{Road\_1}\\
+  ontology: RoadSegment
+};
+
+% Edges
+\draw[->] (Pedestrian_1.south) -- (Road_1.north) 
+  node[midway, left, font=\small, align=center] {
+    ontology: CrossesDuring\\
+    (0s–~5s)
+  };
+
+\draw[->] (Car_1.west) .. controls +(left:2cm) and +(right:2cm) .. (Pedestrian_1.north) 
+  node[midway, right, font=\small, align=center] {
+    ontology: YieldsWhile\\
+    (Pedestrian\_1 in crosswalk)
+  };
+
+\end{tikzpicture}
+
+
+% static part
+How to guide the diffusion (variational distillation) using scene graphs for generating urban scenarios? - Based on the literature and continuing work by Wu et al.~\cite{wu2022designing}, we can use ontological grounding, where we define a scenegraph that captures the relationships between different elements in the scenario, such as pedestrians, vehicles, and the environment. Scenegraph editing for a static scene generation is already shown in works like GraphCanvas3D~\cite{liu2024graph} (\url{https://www.youtube.com/watch?v=4YRTydsv-qg}). The question then is how to use this scenegraph to guide the diffusion process (which mostly uses variational score distillation sampling for text to 3D) for generating dynamic scenarios. % Score distillation for aspects such as terrain, road surface, and other static elements.
+
+% dynamic part
+%Predefined assets for pedestrians and vehicles, etc (like MetaUrban)
+%How do we create these scenarios allowing for diverse pedestrian behaviors: TODO missing interactions in previous models
+
+% evaluation
+evaluate interactivity, diversity, realism, and controllability (more?) of the generated scenarios?
 
 
 \section*{Appendix}

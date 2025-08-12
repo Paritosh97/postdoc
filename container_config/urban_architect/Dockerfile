@@ -1,7 +1,7 @@
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
-ARG USER_NAME=dreamers
-ARG GROUP_NAME=dreamers
+ARG USER_NAME=urbanarchitect
+ARG GROUP_NAME=urbanarchitect
 ARG UID=1000
 ARG GID=1000
 
@@ -47,57 +47,40 @@ RUN pip install --upgrade pip setuptools==69.5.1 ninja
 
 # Clone the repository
 WORKDIR /workspace
-RUN git clone https://github.com/GGGHSL/GraphDreamer.git
+RUN git clone https://github.com/UrbanArchitect/UrbanArchitect
 
 # Install the requirements
-WORKDIR /workspace/GraphDreamer
+WORKDIR /workspace/UrbanArchitect
+
 
 RUN pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
 RUN pip install git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2
 RUN pip install git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
 
+
 RUN pip install \
-    "lightning==2.0.0" \
-    "omegaconf==2.3.0" \
-    jaxtyping \
-    typeguard \
-    "diffusers<0.20" \
-    "transformers==4.28.1" \
-    accelerate \
-    opencv-python \
-    tensorboard \
-    matplotlib \
-    "imageio[ffmpeg]>=2.28.0" \
-    git+https://github.com/NVlabs/nvdiffrast.git \
-    libigl \
-    xatlas \
-    trimesh[easy] \
-    networkx \
-    pysdf \
-    PyMCubes \
-    wandb \
-    "gradio==4.11.0" \
-    git+https://github.com/ashawkey/envlight.git \
-    torchmetrics \
-    IPython \
-    ipywidgets \
-    xformers \
-    "bitsandbytes==0.38.1" \
-    sentencepiece \
-    safetensors \
-    huggingface_hub \
-    einops \
-    kornia \
-    taming-transformers-rom1504 \
-    git+https://github.com/openai/CLIP.git \
-    controlnet_aux \
-    "torch-ema==0.3" \
-    "tensorboardX==2.6" \
-    tqdm \
-    ninja \
-    numpy \
-    scipy \
-    imageio-ffmpeg \
-    "trimesh==3.21.7"
+    "git+https://github.com/facebookresearch/pytorch3d.git" \
+    "transformers==4.40.1" \
+    "tokenizers==0.19.1" \
+    "coloredlogs==15.0.1" \
+    "einops==0.7.0" \
+    "imageio==2.34.1" \
+    "numpy==1.26.4" \
+    "opencv-python==4.7.0.72" \
+    "Pillow==10.3.0" \
+    "scipy==1.13.0" \
+    "scikit-image==0.23.2" \
+    "xformers==0.0.25.post1"
+
+RUN pip install "pytorch3d==0.7.4"
+
+RUN git lfs install
+
+# Create models directory and clone Hugging Face repos
+RUN mkdir -p /workspace/UrbanArchitect/models \
+    && git clone https://huggingface.co/openai/clip-vit-base-patch32 /workspace/UrbanArchitect/models/clip-vit-base-patch32 \
+    && git clone https://huggingface.co/stabilityai/stable-diffusion-2-1 /workspace/UrbanArchitect/models/stable-diffusion-2-1
+
+RUN wget -O /workspace/UrbanArchitect/models/filename.ext https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
 
 CMD ["/bin/bash"]

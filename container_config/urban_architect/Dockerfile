@@ -31,6 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     python3.10-dev \
     python3-pip \
     wget \
+    git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
 # Create group and user, but DO NOT switch yet
@@ -53,26 +54,24 @@ RUN git clone https://github.com/UrbanArchitect/UrbanArchitect
 WORKDIR /workspace/UrbanArchitect
 
 
-RUN pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
-RUN pip install git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2
-RUN pip install git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
+RUN pip install --no-cache-dir torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2
+RUN pip install --no-cache-dir git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
 
+RUN pip install --no-cache-dir \
+    transformers==4.33.3 \
+    tokenizers==0.13.3 \
+    coloredlogs==15.0.1 \
+    einops==0.7.0 \
+    imageio==2.31.5 \
+    numpy==1.26.0 \ 
+    opencv-python==4.8.0.76 \
+    Pillow==10.0.1 \
+    scipy==1.11.3 \ 
+    scikit-image==0.21.0 \
+    xformers==0.0.22
 
-RUN pip install \
-    "git+https://github.com/facebookresearch/pytorch3d.git" \
-    "transformers==4.40.1" \
-    "tokenizers==0.19.1" \
-    "coloredlogs==15.0.1" \
-    "einops==0.7.0" \
-    "imageio==2.34.1" \
-    "numpy==1.26.4" \
-    "opencv-python==4.7.0.72" \
-    "Pillow==10.3.0" \
-    "scipy==1.13.0" \
-    "scikit-image==0.23.2" \
-    "xformers==0.0.25.post1"
-
-RUN pip install "pytorch3d==0.7.4"
+RUN pip install --no-cache-dir "git+https://github.com/facebookresearch/pytorch3d.git"
 
 RUN git lfs install
 
@@ -81,6 +80,6 @@ RUN mkdir -p /workspace/UrbanArchitect/models \
     && git clone https://huggingface.co/openai/clip-vit-base-patch32 /workspace/UrbanArchitect/models/clip-vit-base-patch32 \
     && git clone https://huggingface.co/stabilityai/stable-diffusion-2-1 /workspace/UrbanArchitect/models/stable-diffusion-2-1
 
-RUN wget -O /workspace/UrbanArchitect/models/filename.ext https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
+RUN wget -O /workspace/UrbanArchitect/models/checkpoint-100000.pth https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
 
 CMD ["/bin/bash"]

@@ -41,7 +41,7 @@ The document highlights the work plan for the the WP4 of the ANR Creative 3D~\fo
 
 Virtual Reality (VR) and Augmented Reality (AR) technologies have advanced significantly in recent years, enabling the creation of immersive and interactive environments for various applications. These can be further used to provide personalized training and rehabilitation scenarios. In the context of low vision rehabilitation, these models can be particularly useful to study pedestrian behaviours under normal and simulated vision. However, most simulated environments suffer from perceptual gaps between the designer, the user, and the system. The existing GusT-3D framework~\cite{wu2022designing}, developed during the Creative3D project, provides a foundation to address this. However, the current framework is still limited by its reliance on a fixed set of urban environments and interactions innhibiting its ability to scale.
 
-In parallel, recent works on 3D generative models for urban scenario generation has shown promising results in generating diverse and realistic urban environments. Additionally, these models have been able to capture the diverse nature and the complexities of an urban setting, including the interactions between pedestrians, vehicles, and the environment. Driven by these extraordinary capabilities, exploring the potential of generative models for GusT-3D is a promising avenue. Our primary objective is to harness the power of generative models to enhance the capabilities of the GusT-3D framework, enabling it to create more diverse and realistic urban scenarios.
+In parallel, recent works on 3D generative models for urban scenario generation has shown promising results in generating diverse and realistic urban environments. Additionally, these models have been able to capture the diverse nature and the complexities of an urban setting, including the interactions between pedestrians, vehicles, and the environment. Driven by these extraordinary capabilities, exploring the potential of generative models will enable us to create more diverse and realistic urban scenarios.
 
 \section{Related Work}
 
@@ -53,108 +53,13 @@ VR Simulations have been widely used to study pedestrian behavior and interactio
 
 The GUsT-3D framework~\cite{wu2022designing} addresses this by first defining the scene using a scenegraph, which captures the relationships between different elements in the scenario (ontology) and then defining the task to be carried out during the course of the scenario using a GUTasks (intersubjectivity). Lastly, it uses a query component for logging and post-scenario analysis of the experience (intentionality). This framework was also applied by creating a dataset of 6 road-crossing scenarios to study pedestrian behavior under normal and low vision~\cite{wu2023exploring}. Even though GusT-3D framework addresses the perceptual gaps which were identified by Dourish, it still relies on a fixed set of scenarios and interactions.
 
-\subsection{Grounding: Input for Scene Generation}
+\subsection{Urban Scenario Generation}
 
-Generative models have already been applied to urban scenario generation, where models synthesize plausible urban environments, pedestrian layouts, or vehicle positions from various types of input. An input in the context of a generative model is any data—such as a prompt, image, or scenario graph—provided to influence the output. Grounding, on the other hand, is the process of linking elements of that input to specific, coherent representations in the generated scenario, such as ensuring the "footpath" appears visually plausible, is correctly positioned on the "road", and respects spatial relationships or physical constraints. Grounding ensures the generated scenario isn't just randomly composed but meaningfully aligned with the intended semantics of the input. The common ways to do grounding are,
+This section discusses pre-existing models used for generating scenarios in urban environments. These models can be broadly classified into procedural and deep generative approaches.
 
-\subsubsection{Rules and Constraints}
+\subsubsection{Procedural Methods}
 
-\paragraph{Rules} can be used to give a prescriptive logic that defines how to generate or modify a scenario. Rule-based systems are necessarily procedural, meaning they follow a set of predefined steps or algorithms to create scenarios. Table \ref{tab:rule_based_models} lists some of the recent rule-based models for scenario generation. Although these systems allow users to define rules for generating scenarios—such as the placement of buildings, roads, and other elements—they often require an intermediate representation which captures the real-world environments. Creating such representations can be challenging, as it requires a deep understanding of the underlying rules and relationships between different elements. Additionally, rule-based systems can be limited in their ability to generate diverse and realistic scenarios, as they rely on predefined rules that may not capture the full complexity of real-world environments.traffic
-
-\begin{table}[ht]
-\centering
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
-    CityEngine~\cite{parish2001procedural} & Procedural Modeling with Rules & 3D scene \\ \hline
-    Infinigen~\cite{raistrick2023infinite} & Procedural Modeling with Rules & 3D scene \\ \hline
-    MetaUrban~\cite{wu2024metaurban} & Description Scripts for Scene Layout & 3D Scenario \\ \hline    
-    \end{tabular}
-\caption{Rule-based Models for Urban Scenario Generation}
-\label{tab:rule_based_models}
-\end{table}
-
-\paragraph{Constraints} define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla}. However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments.
-
-\subsubsection{Prompts}
-
-Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of large language models (LLMs) like GPT-3, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table \ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
-
-\begin{table}[h]
-\centering
-\resizebox{\textwidth}{!}{
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
-    ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
-    ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
-    LayoutGPT~\cite{feng2023layoutgpt} & Prompts converted to CSS-like Layout Formatting by LLMs & Layout Representation \\ \hline
-    ChatDyn~\cite{wei2024chatdyn} & LLM-based planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
-    Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
-    TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
-    3D-SceneDreamer~\cite{zhang20243d} & Prompt to point-of-view image followed by image to 3D & 3D Scene \\ \hline
-    GraphCanvas3D~\cite{liu2024graph} & Uses LLM to create a scenegraph and then a 3D scene & 3D Scene \\ \hline
-    Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scenegraph and then a 3D scene & 3D Scene \\ \hline
-    SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
-    Surreal Drivers~\cite{jin2024surrealdriver} & Chain-of-thought prompts & 3D Scene \\ \hline
-    Text2nerf~\cite{zhang2024text2nerf} & Text prompts & 3D Scene \\ \hline
-    X-Scene~\cite{yang2025x} & Text prompts & 3D Scene \\ \hline
-    \end{tabular}
-}
-\caption{Prompt-based Models for Urban Scenario Generation}
-\label{tab:prompt_based_models}
-\end{table}
-
-\subsubsection{Layouts}
-
-Layouts are structured representations of scenarios that capture the spatial relationships between different elements, such as buildings, roads, and pedestrians. These may include bird's-eye views, top-down maps, or other forms of spatial representations that provide a high-level overview of the scenario. Table \ref{tab:layout_based_models} lists some of the recent layout-based models for scenario generation.
-
-\begin{table}[ht]
-\centering
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
-    CC3D~\cite{bahmani2023cc3d} & 2D Layout-based 3D Scene Generation & 3D Scene \\ \hline
-    CityDreamer4D~\cite{xie2025citydreamer4d} & Uses a Layout Generator and a traffic scenario generator & 3D Scenario \\ \hline
-    Infinicube~\cite{lu2024infinicube} & Text prompts, HD Maps and Bounding Boxes & 3D Scenario \\ \hline
-    Work by Zhang et al.~\cite{urbandiff} & BEV map & 3D Scene \\ \hline
-    UniScene~\cite{li2025uniscene} & BEV map & Multi-view video \\ \hline
-    Savkin et al.~\cite{savkin2021unsupervised} & Scenegraph & Scenario Image \\ \hline
-    \end{tabular}
-\caption{Layout-based Models for Urban Scenario Generation}
-\label{tab:layout_based_models}
-\end{table}
-
-\subsubsection{Multimodal}
-
-Multimodal inputs combine different types of data, such as text, images, and structured representations, to provide a richer context for scenario generation. Table \ref{tab:multimodal_models} lists some of the recent multimodal models for scenario generation.
-
-\begin{table}[ht]
-\centering
-\resizebox{\textwidth}{!}{
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
-    CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
-    CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
-    Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
-    GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or point-of-view images & 3D Scene \\ \hline
-    MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
-    Scene123~\cite{yang2024scene123} & Text prompt, point-of-view image or Text Description & 3D Scene \\ \hline
-    StreetScapes~\cite{deng2024streetscapes} & BEV and height map with support for prompts & Video \\ \hline
-    Urban Architect~\cite{lu2024urban} & 3D Layout and Text Prompts & 3D Scene \\ \hline
-    Urban World~\cite{shang2024urbanworld} & Layout (generation) and prompts (refinement) & 3D Scenario \\ \hline
-    Wonderplay~\cite{li2025wonderplay} & point-of-view image and action (physics) & 3D Video \\ \hline
-    \end{tabular}}
-\caption{Multimodal Models for Urban Scenario Generation}
-\label{tab:multimodal_models}
-\end{table}
-
-\subsection{Generation Paradigms}
-
-This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and deep generative approaches.
-
-\subsubsection{Procedural Approaches}
+Procedural methods leverage algorithms and rules to generate urban scenarios, often resulting in highly customizable environments. They can be further divided into two categories:
 
 \paragraph{Classic Procedural Generation} use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}, which allows users to define scenarios using a probabilistic programming language. Similarly, MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework to create urban micromobility scenarios using the Metadrive~\cite{li2022metadrive} simulator.
 
@@ -162,7 +67,7 @@ This section discusses the different paradigms used for generating scenarios in 
 
 Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a scenario with a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings. However, no real crossroad would exist in the world that conforms to these specifications.
 
-\subsubsection{Deep-Generative Approaches}
+\subsubsection{Deep-Generative Methods}
 
 Deep-Generative Approaches have recently become popular for various sort of 3D generation. To create a complete scenario, some techniques use generative models such as GANs, VAEs or Diffusion models in combination with procedural techniques. These can be broadly classified into the following categories:
 
@@ -170,7 +75,11 @@ Deep-Generative Approaches have recently become popular for various sort of 3D g
 
 \paragraph{Procedural Dynamics with Deep-Generative Environments} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld~\cite{shang2024urbanworld} converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm. CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
 
-\paragraph{Fully Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
+\paragraph{Complete Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
+
+\subsection{Scenegraph-Controlled Diffusion}
+
+Despite the advancements in urban scenario generation, very few methods have explored the use of scene graphs to control the generation process. In recent years, the achievements in text-to-image generation has enabled the advancement of text-to-3D generation using Score Distillation Sampling (SDS)~\cite{poole2022dreamfusion} which optimizes a 3D model by aligning 2D images rendered at arbitrary viewpoints with the distribution derived from a text-conditioned diffusion model. Subsequent works including ProlificDreamer~\cite{wang2023prolificdreamer} introduced Variational Score Distillation (VSD) which addresses the over-regularization and mode collapse issues of SDS by introducing a variational formulation that jointly optimizes the 3D representation and a learnable Gaussian noise distribution, enabling more faithful geometry and richer texture generation. GraphDreamer~\cite{gao2024graphdreamer} allows for the incorporation of scene graphs into the SDS process, enabling more structured and controllable scene generation. Lastly, Urban Architect~\cite{lu2024urban} uses VSD to create urban environments based on text prompts and 3D layouts.
 
 \subsection{Datasets}
 
@@ -284,11 +193,11 @@ GraphDreamer~\cite{gao2024graphdreamer} - ongoing
 
 \section{Problem and Open Question}
 
-State-of-the-art approaches, such as GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. In contrast, generative models can capture a wide range of realistic urban environments. Yet, only a few of these models~\cite{savkin2021unsupervised,liu2024graph,ling2025scenethesis,liu2025controllable} are grounded using scenegraphs, and none of them generate dynamic scenarios—they are restricted to producing static 3D scenes.
+State-of-the-art approaches, such as GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. In contrast, generative models such as diffusion have shown potential in synthesizing 3D scenes from scenegraphs. Yet, none of them can generate dynamic urban scenarios and are restricted to producing static 3D scenes.
 
 Thus, the open question is:
 
-"How to ground generative models using scenegraphs to create pedestrian-in-the-loop scenarios which reflect realistic and diverse urban situations?"
+"How to ground diffusion using scenegraphs to create pedestrian-in-the-loop scenarios which reflect realistic and diverse urban situations?"
 
 \section{Work Plan}
 
@@ -362,7 +271,7 @@ Thus, the open question is:
 
 \subsection{Meeting Notes}
 
-\subsection{01/08/2025}    
+\subsubsection{01/08/2025}    
 
 \begin{itemize}
     \item \textbf{Clarify Image Usage:} Specify what kinds of images are being referred to in the input for the models (e.g., diagrams, real-world photos, layouts).
@@ -379,6 +288,105 @@ Thus, the open question is:
     
     \item \textbf{Better Categorization of Literature:} Reorganize cited papers using clear categories such as research themes, methodologies, etc.
 \end{itemize}
+
+
+\subsection{Grounding: Input for Scene Generation}
+
+Generative models have already been applied to urban scenario generation, where models synthesize plausible urban environments, pedestrian layouts, or vehicle positions from various types of input. An input in the context of a generative model is any data—such as a prompt, image, or scenario graph—provided to influence the output. Grounding, on the other hand, is the process of linking elements of that input to specific, coherent representations in the generated scenario, such as ensuring the "footpath" appears visually plausible, is correctly positioned on the "road", and respects spatial relationships or physical constraints. Grounding ensures the generated scenario isn't just randomly composed but meaningfully aligned with the intended semantics of the input. The common ways to do grounding are,
+
+\subsubsection{Rules and Constraints}
+
+\paragraph{Rules} can be used to give a prescriptive logic that defines how to generate or modify a scenario. Rule-based systems are necessarily procedural, meaning they follow a set of predefined steps or algorithms to create scenarios. Table \ref{tab:rule_based_models} lists some of the recent rule-based models for scenario generation. Although these systems allow users to define rules for generating scenarios—such as the placement of buildings, roads, and other elements—they often require an intermediate representation which captures the real-world environments. Creating such representations can be challenging, as it requires a deep understanding of the underlying rules and relationships between different elements. Additionally, rule-based systems can be limited in their ability to generate diverse and realistic scenarios, as they rely on predefined rules that may not capture the full complexity of real-world environments.traffic
+
+\begin{table}[ht]
+\centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    CityEngine~\cite{parish2001procedural} & Procedural Modeling with Rules & 3D scene \\ \hline
+    Infinigen~\cite{raistrick2023infinite} & Procedural Modeling with Rules & 3D scene \\ \hline
+    MetaUrban~\cite{wu2024metaurban} & Description Scripts for Scene Layout & 3D Scenario \\ \hline    
+    \end{tabular}
+\caption{Rule-based Models for Urban Scenario Generation}
+\label{tab:rule_based_models}
+\end{table}
+
+\paragraph{Constraints} define conditions that must be satisfied to get a valid scenario. Scenic~\cite{fremont2019scenic} is a probabilistic programming language that allows users to define constraints for generating scenarios. It uses a declarative approach to specify the properties of the scenario, such as the layout, objects, and their relationships. These can then be rendered using a frontend such as CARLA~\cite{dosovitskiy2017carla}. However, it suffers from the same limitations of rule-based systems, as it can only generate scenarios that fit within the defined constraints, potentially missing out on the richness and variability of real-world environments.
+
+\subsubsection{Prompts}
+
+Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of large language models (LLMs) like GPT-3, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table \ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
+
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
+    ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
+    LayoutGPT~\cite{feng2023layoutgpt} & Prompts converted to CSS-like Layout Formatting by LLMs & Layout Representation \\ \hline
+    ChatDyn~\cite{wei2024chatdyn} & LLM-based planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
+    Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
+    TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
+    3D-SceneDreamer~\cite{zhang20243d} & Prompt to point-of-view image followed by image to 3D & 3D Scene \\ \hline
+    GraphCanvas3D~\cite{liu2024graph} & Uses LLM to create a scenegraph and then a 3D scene & 3D Scene \\ \hline
+    Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scenegraph and then a 3D scene & 3D Scene \\ \hline
+    SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
+    Surreal Drivers~\cite{jin2024surrealdriver} & Chain-of-thought prompts & 3D Scene \\ \hline
+    Text2nerf~\cite{zhang2024text2nerf} & Text prompts & 3D Scene \\ \hline
+    X-Scene~\cite{yang2025x} & Text prompts & 3D Scene \\ \hline
+    \end{tabular}
+}
+\caption{Prompt-based Models for Urban Scenario Generation}
+\label{tab:prompt_based_models}
+\end{table}
+
+\subsubsection{Layouts}
+
+Layouts are structured representations of scenarios that capture the spatial relationships between different elements, such as buildings, roads, and pedestrians. These may include bird's-eye views, top-down maps, or other forms of spatial representations that provide a high-level overview of the scenario. Table \ref{tab:layout_based_models} lists some of the recent layout-based models for scenario generation.
+
+\begin{table}[ht]
+\centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    CC3D~\cite{bahmani2023cc3d} & 2D Layout-based 3D Scene Generation & 3D Scene \\ \hline
+    CityDreamer4D~\cite{xie2025citydreamer4d} & Uses a Layout Generator and a traffic scenario generator & 3D Scenario \\ \hline
+    Infinicube~\cite{lu2024infinicube} & Text prompts, HD Maps and Bounding Boxes & 3D Scenario \\ \hline
+    Work by Zhang et al.~\cite{urbandiff} & BEV map & 3D Scene \\ \hline
+    UniScene~\cite{li2025uniscene} & BEV map & Multi-view video \\ \hline
+    Savkin et al.~\cite{savkin2021unsupervised} & Scenegraph & Scenario Image \\ \hline
+    \end{tabular}
+\caption{Layout-based Models for Urban Scenario Generation}
+\label{tab:layout_based_models}
+\end{table}
+
+\subsubsection{Multimodal}
+
+Multimodal inputs combine different types of data, such as text, images, and structured representations, to provide a richer context for scenario generation. Table \ref{tab:multimodal_models} lists some of the recent multimodal models for scenario generation.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
+    CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
+    CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
+    Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
+    GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or point-of-view images & 3D Scene \\ \hline
+    MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
+    Scene123~\cite{yang2024scene123} & Text prompt, point-of-view image or Text Description & 3D Scene \\ \hline
+    StreetScapes~\cite{deng2024streetscapes} & BEV and height map with support for prompts & Video \\ \hline
+    Urban Architect~\cite{lu2024urban} & 3D Layout and Text Prompts & 3D Scene \\ \hline
+    Urban World~\cite{shang2024urbanworld} & Layout (generation) and prompts (refinement) & 3D Scenario \\ \hline
+    Wonderplay~\cite{li2025wonderplay} & point-of-view image and action (physics) & 3D Video \\ \hline
+    \end{tabular}}
+\caption{Multimodal Models for Urban Scenario Generation}
+\label{tab:multimodal_models}
+\end{table}
+
 
 \bibliographystyle{abbrv}
 \bibliography{main}

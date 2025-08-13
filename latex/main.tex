@@ -39,7 +39,7 @@ The document highlights the work plan for the the WP4 of the ANR Creative 3D~\fo
 
 \section{Introduction}
 
-Virtual Reality (VR) and Augmented Reality (AR) technologies have advanced significantly in recent years, enabling the creation of immersive and interactive environments for various applications. These can be further used to provide personalized training and rehabilitation scenarios. In the context of low vision rehabilitation, these models can be particularly useful to study pedestrian behaviours under normal and simulated vision. However, most simulated environments suffer from perceptual gaps between the designer, the user, and the system. The existing GusT-3D framework~\cite{wu2022designing}, developed during the Creative3D project, provides a foundation to address this. However, the current framework is still limited by its reliance on a fixed set of urban environments and interactions. Inhibiting its ability to scale.
+Virtual Reality (VR) and Augmented Reality (AR) technologies have advanced significantly in recent years, enabling the creation of immersive and interactive environments for various applications. These can be further used to provide personalized training and rehabilitation scenarios. In the context of low vision rehabilitation, these models can be particularly useful to study pedestrian behaviours under normal and simulated vision. However, most simulated environments suffer from perceptual gaps between the designer, the user, and the system. The existing GusT-3D framework~\cite{wu2022designing}, developed during the Creative3D project, provides a foundation to address this. However, the current framework is still limited by its reliance on a fixed set of urban environments and interactions innhibiting its ability to scale.
 
 In parallel, recent works on 3D generative models for urban scenario generation has shown promising results in generating diverse and realistic urban environments. Additionally, these models have been able to capture the diverse nature and the complexities of an urban setting, including the interactions between pedestrians, vehicles, and the environment. Driven by these extraordinary capabilities, exploring the potential of generative models for GusT-3D is a promising avenue. Our primary objective is to harness the power of generative models to enhance the capabilities of the GusT-3D framework, enabling it to create more diverse and realistic urban scenarios.
 
@@ -105,7 +105,6 @@ Prompts are textual cues provided to the generative model to guide the scenario 
 \label{tab:prompt_based_models}
 \end{table}
 
-
 \subsubsection{Layouts}
 
 Layouts are structured representations of scenarios that capture the spatial relationships between different elements, such as buildings, roads, and pedestrians. These may include bird's-eye views, top-down maps, or other forms of spatial representations that provide a high-level overview of the scenario. Table \ref{tab:layout_based_models} lists some of the recent layout-based models for scenario generation.
@@ -139,7 +138,6 @@ Multimodal inputs combine different types of data, such as text, images, and str
     CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
     CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
     Work by Liu et al.~\cite{liu2025controllable} & Scenegraph assisted using text prompts & 3D Scene \\ \hline
-    Dynamic City~\cite{bian2024dynamiccity} & Commands, Layouts, Object Inpainting and Trajectory & 3D Scenario \\ \hline
     GAUDI~\cite{bautista2022gaudi} & Conditioning using prompts or point-of-view images & 3D Scene \\ \hline
     MagicDrive3D~\cite{gao2024magicdrive3d} & Text prompts, Bird Eye View (BEV) map and 3D Bounding Boxes & Reconstructed 3D video \\ \hline
     Scene123~\cite{yang2024scene123} & Text prompt, point-of-view image or Text Description & 3D Scene \\ \hline
@@ -154,7 +152,7 @@ Multimodal inputs combine different types of data, such as text, images, and str
 
 \subsection{Generation Paradigms}
 
-This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and neural generative approaches.
+This section discusses the different paradigms used for generating scenarios in urban environments. These paradigms can be broadly classified into procedural, and deep generative approaches.
 
 \subsubsection{Procedural Approaches}
 
@@ -164,17 +162,15 @@ This section discusses the different paradigms used for generating scenarios in 
 
 Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a scenario with a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings. However, no real crossroad would exist in the world that conforms to these specifications.
 
-\subsubsection{Procedural Deep-Generative Approaches}
+\subsubsection{Deep-Generative Approaches}
 
-Partially generative approaches use generative models such as GANs, VAEs or Diffusion models in combination with procedural techniques. These can be further divided into the following categories:
+Deep-Generative Approaches have recently become popular for various sort of 3D generation. To create a complete scenario, some techniques use generative models such as GANs, VAEs or Diffusion models in combination with procedural techniques. These can be broadly classified into the following categories:
 
 \paragraph{Procedural Environments with Deep-Generative Dynamics} generate the static aspects of the environment using procedural techniques, while the dynamic aspects such as vehicles and pedestrians are generated using generative models. For example, Chatdyn~\cite{wei2024chatdyn} uses CARLA~\cite{dosovitskiy2017carla} to construct the traffic environment, then populate it with pedestrians and vehicles, each equipped with an LLM agent to generate a high-level scenario plan. This high-level plan is then executed in a low-level PedExecutor using Text2Motion~\cite{guo2024momask} for pedestrians and VehExectutor using a physics-based, history-aware reinforcement learning controller to produce vehicle trajectories.
 
 \paragraph{Procedural Dynamics with Deep-Generative Environments} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld~\cite{shang2024urbanworld} converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm. CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
 
-\subsubsection{Fully Deep-Generative Approaches}
-
-These models try to recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. DynamicCity~\cite{bian2024dynamiccity} encodes dynamic 3D occupancy into six spatial–temporal 2D feature planes (HexPlane) via a VAE, then generates new HexPlanes using a Diffusion Transformer with a Padded Rollout to jointly model space and time. These generated HexPlanes are decoded back into full 4D occupancy, enabling efficient, controllable dynamic scene synthesis. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
+\paragraph{Fully Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
 
 \subsection{Datasets}
 
@@ -288,11 +284,11 @@ GraphDreamer~\cite{gao2024graphdreamer} - ongoing
 
 \section{Problem and Open Question}
 
-State-of-the-art approaches, such as GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. In contrast, generative models can capture a wide range of realistic urban environments. Yet, only a few of these models~\cite{savkin2021unsupervised,liu2024graph,ling2025scenethesis,liu2025controllable} are grounded in scenegraphs, and none of them generate dynamic scenarios—they are restricted to producing static 3D scenes.
+State-of-the-art approaches, such as GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. In contrast, generative models can capture a wide range of realistic urban environments. Yet, only a few of these models~\cite{savkin2021unsupervised,liu2024graph,ling2025scenethesis,liu2025controllable} are grounded using scenegraphs, and none of them generate dynamic scenarios—they are restricted to producing static 3D scenes.
 
 Thus, the open question is:
 
-"How to ground urban generative models using scenegraphs and task specification to create pedestrian-in-the-loop scenarios which reflect realistic and diverse urban situations?"
+"How to ground generative models using scenegraphs to create pedestrian-in-the-loop scenarios which reflect realistic and diverse urban situations?"
 
 \section{Work Plan}
 

@@ -59,7 +59,7 @@ RUN pip install --no-cache-dir git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5
 RUN pip install --no-cache-dir git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
 
 RUN pip install --no-cache-dir \
-    transformers==4.33.3 \
+    transformers==4.33.0 \
     tokenizers==0.13.3 \
     coloredlogs==15.0.1 \
     einops==0.7.0 \
@@ -69,7 +69,11 @@ RUN pip install --no-cache-dir \
     Pillow==10.0.1 \
     scipy==1.11.3 \ 
     scikit-image==0.21.0 \
-    xformers==0.0.22
+    xformers==0.0.22 \
+    matplotlib==3.10.5 \
+    torch_scatter==2.1.2 \
+    diffusers==0.21.4 \
+    huggingface_hub==0.20.2
 
 RUN pip install --no-cache-dir "git+https://github.com/facebookresearch/pytorch3d.git"
 

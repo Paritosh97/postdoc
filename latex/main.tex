@@ -79,7 +79,7 @@ Deep-Generative Approaches have recently become popular for various sort of 3D g
 
 \subsection{Scenegraph-Controlled Diffusion}
 
-Despite the advancements in urban scenario generation, very few methods have explored the use of scene graphs to control the generation process. In recent years, the achievements in text-to-image generation has enabled the advancement of text-to-3D generation using Score Distillation Sampling (SDS)~\cite{poole2022dreamfusion} which optimizes a 3D model by aligning 2D images rendered at arbitrary viewpoints with the distribution derived from a text-conditioned diffusion model. Subsequent works including ProlificDreamer~\cite{wang2023prolificdreamer} introduced Variational Score Distillation (VSD) which addresses the over-regularization and mode collapse issues of SDS by introducing a variational formulation that jointly optimizes the 3D representation and a learnable Gaussian noise distribution, enabling more faithful geometry and richer texture generation. GraphDreamer~\cite{gao2024graphdreamer} allows for the incorporation of scene graphs into the SDS process, enabling more structured and controllable scene generation. Lastly, Urban Architect~\cite{lu2024urban} uses VSD to create urban environments based on text prompts and 3D layouts.
+Despite the advancements in urban scenario generation, very few methods have explored the use of scenegraphs to control the generation process. In recent years, the achievements in text-to-image generation has enabled the advancement of text-to-3D generation using Score Distillation Sampling (SDS)~\cite{poole2022dreamfusion} which optimizes a 3D model by aligning 2D images rendered at arbitrary viewpoints with the distribution derived from a text-conditioned diffusion model. Subsequent works including ProlificDreamer~\cite{wang2023prolificdreamer} introduced Variational Score Distillation (VSD) which addresses the over-regularization and mode collapse issues of SDS by introducing a variational formulation that jointly optimizes the 3D representation and a learnable Gaussian noise distribution, enabling more faithful geometry and richer texture generation. GraphDreamer~\cite{gao2024graphdreamer}  uses the the SDS process with scenegraphs to enable more structured and controllable scene generation. However, it uses a simplified static scenegraph representation as shown in Visual genome~\cite{krishna2017visual} in which, nodes represent the objects in the scene, edges represent the relationship between these nodes and attriubtes represent the properties of the node. Example, Elderly (attribute) man (Node) wearing (edge) a hat(node). This limits the ability to generate dynamic scenarios where the relationships between objects change over time.
 
 \subsection{Datasets}
 
@@ -189,15 +189,15 @@ CLIP~\cite{radford2021learning} is a model that can be used to evaluate the qual
 
 \subsubsection{GraphDreamer}
 
-GraphDreamer~\cite{gao2024graphdreamer} - ongoing
+GraphDreamer~\cite{gao2024graphdreamer} breaks of scenegraph to 3d generation because of GPU memory shortage (surpasses 48 GB). a simple prompt to 3d generation works though.
 
 \section{Problem and Open Question}
 
-State-of-the-art approaches, such as GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. In contrast, generative models such as diffusion have shown potential in synthesizing 3D scenes from scenegraphs. Yet, none of them can generate dynamic urban scenarios and are restricted to producing static 3D scenes.
+Frameworkks like GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. On the other hand, state-of-the-art generative models such as SDS have shown potential in synthesizing 3D scenes from static scenegraphs. Yet, none of them can generate dynamic urban scenarios and are restricted to producing static 3D scenes.
 
 Thus, the open question is:
 
-"How to ground diffusion using scenegraphs to create pedestrian-in-the-loop scenarios which reflect realistic and diverse urban situations?"
+"How to ground diffusion using scenegraphs to create scenarios which reflect realistic and diverse urban situations?"
 
 \section{Work Plan}
 

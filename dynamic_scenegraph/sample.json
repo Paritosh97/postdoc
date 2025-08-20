@@ -1,0 +1,90 @@
+{
+  "nodes": [
+    {
+      "id": "environment",
+      "attributes": {
+        "type": "skybox",
+        "time_of_day": "day",
+        "weather": "clear"
+      },
+      "temporal_states": []
+    },
+    {
+      "id": "car",
+      "attributes": {"color": "red", "type": "sedan"},
+      "temporal_states": [
+        {"time_interval": [0.0, 0.4], "description": "accelerates"},
+        {"time_interval": [0.4, 0.7], "description": "slows down"},
+        {"time_interval": [0.7, 1.0], "description": "stops"}
+      ]
+    },
+    {
+      "id": "road",
+      "attributes": {"color": "grey", "type": "asphalt"},
+      "temporal_states": []
+    },
+    {
+      "id": "footpath",
+      "attributes": {"color": "lightgrey", "type": "concrete"},
+      "temporal_states": []
+    },
+    {
+      "id": "traffic_light",
+      "attributes": {"color": "green", "location": "intersection"},
+      "temporal_states": [
+        {"time_interval": [0.0, 0.5], "description": "green"},
+        {"time_interval": [0.5, 0.6], "description": "turns yellow"},
+        {"time_interval": [0.6, 1.0], "description": "turns red"}
+      ]
+    },
+    {
+      "id": "house",
+      "attributes": {"color": "tan", "type": "residential"},
+      "temporal_states": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "car",
+      "target": "road",
+      "rel_type": "OnTop",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "Car moves along the road"
+    },
+    {
+      "source": "traffic_light",
+      "target": "road",
+      "rel_type": "Controls",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "Traffic light regulates the intersection"
+    },
+    {
+      "source": "house",
+      "target": "road",
+      "rel_type": "AdjacentTo",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "House is next to the road"
+    },
+    {
+      "source": "footpath",
+      "target": "road",
+      "rel_type": "AdjacentTo",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "Footpath runs alongside the road"
+    },
+    {
+      "source": "footpath",
+      "target": "house",
+      "rel_type": "AdjacentTo",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "Footpath is next to the house"
+    },
+    {
+      "source": "environment",
+      "target": "road",
+      "rel_type": "Encompasses",
+      "active_intervals": [[0.0, 1.0]],
+      "description": "Environment acts as the skybox/background for the scene"
+    }
+  ]
+}

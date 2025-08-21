@@ -35,6 +35,9 @@
 
 \section{Context and objectives}
 
+The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personal
+\section{Context and objectives}
+
 The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized 3D urban traffic scenarios which can be used for conducting simulations in VR.
 
 \section{Introduction}
@@ -53,7 +56,7 @@ Scenegraph-guided 3D generation is the process of creating 3D environments by le
 
 \subsection{Diffusion-based 4D Generation}
 
-Diffusion models have emerged as a powerful approach for generating high-quality 3D content by iteratively refining a random noise input into a coherent output. Dreamfusion~\cite{poole2022dreamfusion} initially introduced this idea by optimizing a 3D model to align with the distribution derived from a text-conditioned diffusion model using Score Distillation Sampling (SDS). Todo
+Diffusion models have emerged as a powerful approach for generating high-quality 3D content by iteratively refining a random noise input into a coherent output. Dreamfusion~\cite{poole2022dreamfusion} initially text-to-3D by optimizing gaussian noise to align with the distribution derived from a text-conditioned diffusion model using Score Distillation Sampling (SDS). This was extended to 4D scenarios in MaV3D~\cite{singer2023text} and 4d-fy~\cite{bahmani20244d}. However, these methods struggle with precise spatial and temporal control of the generated content.
 
 \subsection{Urban Scenario Generation}
 
@@ -191,13 +194,100 @@ GraphDreamer~\cite{gao2024graphdreamer} breaks for scenegraph to 3d generation b
 
 \section{Problem and Open Question}
 
-To add generative capabilities to frameworks like GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. On the other hand, state-of-the-art generative models such as SDS have shown potential in synthesizing 3D scenes from static scenegraphs. Yet, none of them can generate dynamic urban scenarios and are restricted to producing static 3D scenes.
+%To add generative capabilities to frameworks like GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. 
+While recent diffusion-based generative models have demonstrated strong capabilities in synthesizing urban scenes from static scenegraphs, they remain limited in their ability to model dynamic urban scenarios. In particular, they struggle to provide precise spatial and temporal control over objects and their interactions, which is essential for simulating realistic traffic and pedestrian behaviors.
 
-Thus, the open question is:
+This leads to the following open research question:
 
-"How to ground diffusion using scenegraphs to create scenarios which reflect realistic and diverse urban situations?"
+“How can diffusion models be grounded using scenegraphs to enable controllable generation of urban scenarios that capture both object relationships and their temporal evolution?”
 
 \section{Work Plan}
+
+\subsection{Input Scenegraph}
+
+We represent a temporal (dynamic) scenegraph as a tuple
+
+\begin{equation}
+S = (V, E, \mathcal{T}, \tau)
+\end{equation}
+
+where
+
+\begin{itemize}
+\item $V = \{v_i\}_{i=1}^N$ is a finite set of nodes (objects). Each node $v_i$ is itself a tuple
+\begin{equation}
+v_i = (\mathrm{id}_i, \mathcal{A}_i, \mathcal{S}_i),
+\end{equation}
+where
+\begin{itemize}
+\item $\mathrm{id}_i$ is a unique identifier (string),
+\item $\mathcal{A}_i$ is a (possibly sparse) attribute map:
+\[
+\mathcal{A}_i : \mathcal{K} \rightharpoonup \mathcal{V}
+\]
+(e.g., color, type, material),
+\item $\mathcal{S}_i = \{ (I_{i,k}, \sigma_{i,k}) \}_{k=1}^{K_i}$ is an ordered set of temporal states where each
+\[
+I_{i,k} = [t_{i,k}^{(0)}, t_{i,k}^{(1)}] \subseteq \mathcal{T}
+\]
+is a closed time interval and $\sigma_{i,k}$ is a symbolic or structured description of the node's state on that interval (e.g., `accelerates', `stops', or a parametric motion/pose).
+\end{itemize}
+
+\item $E \subseteq V \times V$ is a set of directed edges. Each edge $e = (v_i, v_j)$ is augmented by
+\begin{equation}
+e = (v_i, v_j, r_{ij}, \mathcal{I}_{ij}, \delta_{ij}),
+\end{equation}
+where
+\begin{itemize}
+\item $r_{ij}$ is the relation type,
+\item $\mathcal{I}_{ij} = \{ J_{ij, \ell} \}_{\ell=1}^{L_{ij}}$ is a set of active time intervals where
+\[
+J_{ij, \ell} = [\tau^{(0)}, \tau^{(1)}] \subseteq \mathcal{T}
+\]
+during which the relation holds,
+\item $\delta_{ij}$ is an optional descriptive field (string or structured metadata) that further explains the relation (e.g., natural language description or a constraint formula).
+\end{itemize}
+
+\item $\mathcal{T}$ is the global time domain. For normalized scenarios, we can take $\mathcal{T} = [0,1]$; for absolute-time scenarios take $\mathcal{T} = [0,T]$ for some duration $T > 0$.
+
+\item $\tau: \bigcup_i \mathcal{S}_i \cup \bigcup_{i,j} \mathcal{I}_{ij} \to \mathcal{P}$ is an optional grounding map from temporal states and relations to parameterized representations (e.g., trajectories, kinematic parameters, animation clips, or low-level simulator actions). $\mathcal{P}$ denotes the space of such parameters.
+\end{itemize}
+
+\paragraph{Semantics}
+A dynamic scenegraph $S$ encodes both (i) the \emph{static layout} through attribute maps $\mathcal{A}_i$ and relations $r_{ij}$ that are continuously active (or active on $\mathcal{T}$), and (ii) the \emph{dynamic behaviour} through temporal states $\mathcal{S}_i$ and relation active intervals $\mathcal{I}_{ij}$. The grounding $\tau$ maps symbolic descriptions to concrete, simulator-ready parameters.
+
+
+\subsubsection*{Example}
+
+Figure \ref{fig:scenegraph_example} illustrates the example scenegraph.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=stealth, node distance=2.2cm, every node/.style={draw, rounded corners, align=center}]
+% Nodes
+\node (env) {environment\\\small{(skybox, day, clear)}};
+\node (house) [right=of env] {house\\\small{(residential)}};
+\node (road) [below=of env] {road\\\small{(asphalt)}};
+\node (foot) [right=of road] {footpath\\\small{(concrete)}};
+\node (car) [left=of road] {car\\\small{(red sedan)}};
+\node (tl) [below=of road, xshift=2.0cm] {traffic\_light\\\small{(green)}};
+
+% Edges
+\draw[->] (car) -- node[midway, above]{OnTop\\$[0,1]$} (road);
+\draw[->] (tl) -- node[midway, right]{Controls\\$[0,1]$} (road);
+\draw[->] (house) -- node[midway, below]{AdjacentTo\\$[0,1]$} (road);
+\draw[->] (foot) -- node[midway, above]{AdjacentTo\\$[0,1]$} (road);
+\draw[->] (foot) -- node[midway, right]{AdjacentTo\\$[0,1]$} (house);
+\draw[->] (env) -- node[midway, left]{Encompasses\\$[0,1]$} (road);
+
+% Temporal annotations (simple)
+\node[below=0.6cm of car, draw=none] (car_times) {\small{car states: $[0,0.4]$ accel, $[0.4,0.7]$ slow, $[0.7,1.0]$ stop}};
+\node[below=0.6cm of tl, draw=none] (tl_times) {\small{tl states: $[0,0.5]$ green, $[0.5,0.6]$ yellow, $[0.6,1.0]$ red}};
+\end{tikzpicture}
+\caption{Example dynamic scenegraph (nodes, relations with active intervals, and temporal states).}
+\label{fig:scenegraph_example}
+\end{figure}
+
 
 % %input
 % example dynamic scenegraph structured

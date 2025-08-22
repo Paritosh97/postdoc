@@ -56,7 +56,7 @@ Scenegraph-guided 3D generation is the process of creating 3D environments by le
 
 \subsection{Diffusion-based 4D Generation}
 
-Diffusion models have emerged as a powerful approach for generating high-quality 3D content by iteratively refining a random noise input into a coherent output. Dreamfusion~\cite{poole2022dreamfusion} initially text-to-3D by optimizing gaussian noise to align with the distribution derived from a text-conditioned diffusion model using Score Distillation Sampling (SDS). This was extended to 4D scenarios in MaV3D~\cite{singer2023text} and 4d-fy~\cite{bahmani20244d}. However, these methods struggle with precise spatial and temporal control of the generated content.
+Diffusion models have emerged as a powerful approach for generating high-quality 3D content by iteratively refining a random noise input into a coherent output. Dreamfusion~\cite{poole2022dreamfusion} initially text-to-3D by optimizing gaussian noise to align with the distribution derived from a text-conditioned diffusion model using Score Distillation Sampling (SDS). This was extended to 4D scenes in MaV3D~\cite{singer2023text}, 4d-fy~\cite{bahmani20244d} and Animate124~\cite{zhao2023animate124}. However, these methods struggle with precise spatial and temporal control of the generated content.
 
 \subsection{Urban Scenario Generation}
 
@@ -288,58 +288,6 @@ Figure \ref{fig:scenegraph_example} illustrates the example scenegraph.
 \label{fig:scenegraph_example}
 \end{figure}
 
-
-% %input
-% example dynamic scenegraph structured
-
-% \begin{tikzpicture}[
-%   node distance=5cm and 4cm,
-%   box/.style={
-%     rectangle, draw, rounded corners, 
-%     minimum width=6cm, minimum height=3cm,
-%     text width=6cm, align=left, font=\small,
-%     fill=gray!10
-%   },
-%   >={Stealth[length=3mm, width=2mm]}
-% ]
-
-% % Nodes
-% \node[box] (Pedestrian_1) {
-%   \textbf{Pedestrian\_1}\\
-%   ontology: Pedestrian\\
-%   trajectory: (2,0) $\to$ (4,2)\\
-%   speed: 1.2 m/s\\
-%   start\_action: Standing\\
-%   end\_action: WalkingOffRoad
-% };
-
-% \node[box, right=of Pedestrian_1] (Car_1) {
-%   \textbf{Car\_1}\\
-%   ontology: Car\\
-%   trajectory: (0,5) $\to$ (10,5)\\
-%   phase1: Stopped until Pedestrian\_1.y $>$ 2\\
-%   phase2: Accelerating 0–5 m/s
-% };
-
-% \node[box, below=of $(Pedestrian_1)!0.5!(Car_1)$] (Road_1) {
-%   \textbf{Road\_1}\\
-%   ontology: RoadSegment
-% };
-
-% % Edges
-% \draw[->] (Pedestrian_1.south) -- (Road_1.north) 
-%   node[midway, left, font=\small, align=center] {
-%     ontology: CrossesDuring\\
-%     (0s–~5s)
-%   };
-
-% \draw[->] (Car_1.west) .. controls +(left:2cm) and +(right:2cm) .. (Pedestrian_1.north) 
-%   node[midway, right, font=\small, align=center] {
-%     ontology: YieldsWhile\\
-%     (Pedestrian\_1 in crosswalk)
-%   };
-
-% \end{tikzpicture}
 
 
 % static part

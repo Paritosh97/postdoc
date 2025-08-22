@@ -80,10 +80,10 @@ RUN pip install --no-cache-dir "git+https://github.com/facebookresearch/pytorch3
 RUN git lfs install
 
 # Create models directory and clone Hugging Face repos
-RUN mkdir -p /workspace/UrbanArchitect/models \
-    && git clone https://huggingface.co/openai/clip-vit-base-patch32 /workspace/UrbanArchitect/models/clip-vit-base-patch32 \
-    && git clone https://huggingface.co/stabilityai/stable-diffusion-2-1 /workspace/UrbanArchitect/models/stable-diffusion-2-1
+#RUN mkdir -p /workspace/UrbanArchitect/models \
+    #&& git clone https://huggingface.co/openai/clip-vit-base-patch32 /workspace/UrbanArchitect/models/clip-vit-base-patch32 \
+    #&& git clone https://huggingface.co/stabilityai/stable-diffusion-2-1 /workspace/UrbanArchitect/models/stable-diffusion-2-1
 
-RUN wget -O /workspace/UrbanArchitect/models/checkpoint-100000.pth https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
+#RUN wget -O /workspace/UrbanArchitect/models/checkpoint-100000.pth https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
 
 CMD ["/bin/bash"]

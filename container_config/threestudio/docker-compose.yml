@@ -1,12 +1,13 @@
 version: '3.8'
 services:
-  graphdreamer:
+  threestudio:
     build: .
-    container_name: urbanarchitect
+    container_name: threestudio
     runtime: nvidia
+    shm_size: "4g"
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
-      - .:/workspace/GraphDreamer
+      - .:/workspace/
     stdin_open: true
     tty: true

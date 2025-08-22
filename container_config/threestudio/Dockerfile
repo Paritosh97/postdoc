@@ -1,7 +1,7 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
-ARG USER_NAME=urbanarchitect
-ARG GROUP_NAME=urbanarchitect
+ARG USER_NAME=dreamers
+ARG GROUP_NAME=dreamers
 ARG UID=1000
 ARG GID=1000
 
@@ -9,13 +9,13 @@ ARG GID=1000
 # See https://developer.nvidia.com/cuda-gpus and limit number to speed-up build
 ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6 8.9 9.0+PTX"
 ENV TCNN_CUDA_ARCHITECTURES=90;89;86;80;75;70;61;60
+ENV FORCE_CUDA=1
 
 
 ENV CUDA_HOME=/usr/local/cuda
 ENV PATH=${CUDA_HOME}/bin:/home/${USER_NAME}/.local/bin:${PATH}
 ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 ENV LIBRARY_PATH=${CUDA_HOME}/lib64/stubs:${LIBRARY_PATH}
-ENV FORCE_CUDA=1
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
@@ -50,42 +50,22 @@ RUN pip install --upgrade pip setuptools==69.5.1 ninja
 
 # Clone the repository
 WORKDIR /workspace
-RUN git clone https://github.com/UrbanArchitect/UrbanArchitect
+RUN git clone https://github.com/threestudio-project/threestudio.git
+RUN git clone https://github.com/DSaurus/threestudio-stable-nerf-renderer.git /workspace/threestudio/custom/
+RUN git clone https://github.com/DSaurus/threestudio-stable-nerf-renderer.git /workspace/threestudio/custom/
+RUN git clone https://github.com/DSaurus/threestudio-4dfy.git /workspace/threestudio/custom/
+RUN git clone https://github.com/GGGHSL/GraphDreamer.git
 
 # Install the requirements
-WORKDIR /workspace/UrbanArchitect
+WORKDIR /workspace/
 
-
-RUN pip install --no-cache-dir torch==2.0.1+cu118 torchvision==0.15.2+cu118 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir torch==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
 RUN pip install --no-cache-dir git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2
 RUN pip install --no-cache-dir git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
+RUN pip install git+https://github.com/NVlabs/nvdiffrast.git
+RUN pip install git+https://github.com/ashawkey/envlight.git
+RUN pip install xformers --index-url https://download.pytorch.org/whl/cu124
 
-RUN pip install --no-cache-dir \
-    transformers==4.33.0 \
-    tokenizers==0.13.3 \
-    coloredlogs==15.0.1 \
-    einops==0.7.0 \
-    imageio==2.31.5 \
-    numpy==1.26.0 \ 
-    opencv-python==4.8.0.76 \
-    Pillow==10.0.1 \
-    scipy==1.11.3 \ 
-    scikit-image==0.21.0 \
-    xformers==0.0.22 \
-    matplotlib==3.10.5 \
-    torch_scatter==2.1.2 \
-    diffusers==0.21.4 \
-    huggingface_hub==0.20.2
-
-RUN pip install --no-cache-dir "git+https://github.com/facebookresearch/pytorch3d.git"
-
-RUN git lfs install
-
-# Create models directory and clone Hugging Face repos
-#RUN mkdir -p /workspace/UrbanArchitect/models \
-    #&& git clone https://huggingface.co/openai/clip-vit-base-patch32 /workspace/UrbanArchitect/models/clip-vit-base-patch32 \
-    #&& git clone https://huggingface.co/stabilityai/stable-diffusion-2-1 /workspace/UrbanArchitect/models/stable-diffusion-2-1
-
-#RUN wget -O /workspace/UrbanArchitect/models/checkpoint-100000.pth https://home.paritosh-sharma.com/index.php/s/FxpSGwaKHDApCxJ/download
+RUN pip install --no-cache-dir absl-py==1.4.0 accelerate==1.10.0 bitsandbytes==0.47.0 controlnet_aux==0.0.10 diffusers==0.34.0 einops==0.8.1 huggingface-hub==0.34.4 imageio==2.37.0 imageio-ffmpeg==0.6.0 jaxtyping==0.3.2 kornia==0.8.1 libigl==2.5.0 lightning==2.0.0 matplotlib==3.10.0 networkx==3.4.2 omegaconf==2.3.0 open3d==0.19.0 opencv-python==4.12.0.88 plotly==5.24.1 PyMCubes==0.1.6 pysdf==0.1.9 safetensors==0.6.2 sentencepiece==0.2.0 taming-transformers-rom1504==0.0.6 tensorboard==2.19.0 torchmetrics==1.8.1 transformers==4.55.0 trimesh==4.7.3 typeguard==4.4.4 wandb==0.21.1 xatlas==0.0.11 git+https://github.com/openai/CLIP.git numpy==2.0.2 pytorch-lightning==2.5.3 scipy==1.15 tqdm==4.67.1
 
 CMD ["/bin/bash"]

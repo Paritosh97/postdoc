@@ -4,6 +4,7 @@ services:
     build: .
     container_name: graphdreamer
     runtime: nvidia
+    shm_size: "4g"
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:

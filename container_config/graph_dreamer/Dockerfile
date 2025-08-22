@@ -31,6 +31,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     python3.10-dev \
     python3-pip \
     wget \
+    nano \
     git-lfs \
     && rm -rf /var/lib/apt/lists/*
 

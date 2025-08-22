@@ -48,7 +48,7 @@ In parallel, recent works on 3D generative models for urban scenario generation 
 
 \section{Related Work}
 
-In this section, we first start by reviewing prior work on scenegraph-guided generation, which is a structured representation of the objects and their relationships within a scene. We then shift our focus existing urban scenario generation models. Finally, we summarize commonly used datasets used for urban scenario generation, and outline validation methods used to assess the quality, diversity, and controllability of the generated scenarios.
+In this section, we first start by reviewing prior work on scenegraph-guided generation, which is a structured representation of the objects and their relationships within a scene. We then shift our focus existing urban scenario generation models. Finally, we summarize the validation methods used to assess the quality, diversity, and controllability of the generated scenarios.
 
 \subsection{Scenegraph-guided Generation}
 
@@ -82,34 +82,6 @@ Deep-Generative Approaches have recently become popular for various sorts of 3D 
 
 \paragraph{Complete Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
 
-\subsection{Datasets}
-
-In this section, we review the datasets that are used to train generative models for road crossing scenarios. Table~\ref{tab:datasets} lists some of the datasets commonly used for training and evaluating generative models in urban environments.
-
-\begin{table}[ht]
-\centering
-\caption{Overview of selected datasets for foundation model-based scenario generation and analysis.}
-\label{tab:datasets}
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{lccccccc}
-\toprule
-\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{Source} \\
-\midrule
-SIND~\cite{xu2022drone}             & 2022 & BEV        & Real         \\
-Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real  \\
-Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & Real \\
-nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & Real \\
-KITTI~\cite{geiger2012we}            & 2012 & FPV        & Real \\
-Cityscapes~\cite{cordts2016cityscapes}      & 2016 & FPV        & .. \\
-HoliCity~\cite{zhou2020holicity}          & 2020 & FPV        & .. \\
-OmniCity~\cite{li2023omnicity}          & 2023 & FPV        & ..  \\
-GoogleEarth~\cite{xie2024citydreamer}          & 2024 & BEV        & Real  \\
-OSM~\cite{xie2024citydreamer}          & 2024 & BEV        & Real \\
-CarlaSC~\cite{wilson2022motionsc}          & 2022 & BEV/FPV    & Synthetic \\
-CityTopia~\cite{xie2025citydreamer4d}          & 2025 & BEV/FPV    & .. \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Validation}
 
@@ -182,7 +154,7 @@ CityDreamer4D~\cite{xie2025citydreamer4d} tried testing the 3D branch with stati
 
 \subsubsection{Urban Architect}
 
-Urban Architect~\cite{lu2024urban} - having some dependency issues with pytorch3d. Models too large (~100GB).
+Urban Architect~\cite{lu2024urban} - Working. Generates images of the urban environment based on the 3D layout.
 
 \subsubsection{CLIP}
 
@@ -444,6 +416,36 @@ Multimodal inputs combine different types of data, such as text, images, and str
     \end{tabular}}
 \caption{Multimodal Models for Urban Scenario Generation}
 \label{tab:multimodal_models}
+\end{table}
+
+
+\subsection{Datasets}
+
+In this section, we review the datasets that are used to train generative models for road crossing scenarios. Table~\ref{tab:datasets} lists some of the datasets commonly used for training and evaluating generative models in urban environments.
+
+\begin{table}[ht]
+\centering
+\caption{Overview of selected datasets for foundation model-based scenario generation and analysis.}
+\label{tab:datasets}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Dataset} & \textbf{Year} & \textbf{View} & \textbf{Source} \\
+\midrule
+SIND~\cite{xu2022drone}             & 2022 & BEV        & Real         \\
+Waymo Open~\cite{sun2020scalability}       & 2020 & FPV        & Real  \\
+Argoverse~\cite{chang2019argoverse}\cite{wilson2023argoverse}        & 2023 & BEV/FPV    & Real \\
+nuScenes~\cite{caesar2020nuscenes}      & 2022 & FPV        & Real \\
+KITTI~\cite{geiger2012we}            & 2012 & FPV        & Real \\
+Cityscapes~\cite{cordts2016cityscapes}      & 2016 & FPV        & .. \\
+HoliCity~\cite{zhou2020holicity}          & 2020 & FPV        & .. \\
+OmniCity~\cite{li2023omnicity}          & 2023 & FPV        & ..  \\
+GoogleEarth~\cite{xie2024citydreamer}          & 2024 & BEV        & Real  \\
+OSM~\cite{xie2024citydreamer}          & 2024 & BEV        & Real \\
+CarlaSC~\cite{wilson2022motionsc}          & 2022 & BEV/FPV    & Synthetic \\
+CityTopia~\cite{xie2025citydreamer4d}          & 2025 & BEV/FPV    & .. \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 

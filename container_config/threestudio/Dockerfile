@@ -52,7 +52,7 @@ RUN pip install --upgrade pip setuptools==69.5.1 ninja
 WORKDIR /workspace
 RUN git clone https://github.com/threestudio-project/threestudio.git
 RUN git clone https://github.com/DSaurus/threestudio-stable-nerf-renderer.git /workspace/threestudio/custom/threestudio-stable-nerf-renderer/
-RUN git clone https://github.com/DSaurus/threestudio-stable-nerf-renderer.git /workspace/threestudio/custom/threestudio-stable-nerf-renderer/
+RUN git clone https://github.com/DSaurus/threestudio-mvdream.git /workspace/threestudio/custom/threestudio-mvdream/
 RUN git clone https://github.com/DSaurus/threestudio-4dfy.git /workspace/threestudio/custom/threestudio-4dfy/
 RUN git clone https://github.com/GGGHSL/GraphDreamer.git
 

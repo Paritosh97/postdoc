@@ -5,12 +5,9 @@ ARG GROUP_NAME=dreamers
 ARG UID=1000
 ARG GID=1000
 
-# Set compute capability for nerfacc and tiny-cuda-nn
-# See https://developer.nvidia.com/cuda-gpus and limit number to speed-up build
 ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6 8.9 9.0+PTX"
 ENV TCNN_CUDA_ARCHITECTURES=90;89;86;80;75;70;61;60
 ENV FORCE_CUDA=1
-
 
 ENV CUDA_HOME=/usr/local/cuda
 ENV PATH=${CUDA_HOME}/bin:/home/${USER_NAME}/.local/bin:${PATH}
@@ -48,16 +45,21 @@ USER ${USER_NAME}
 
 RUN pip install --upgrade pip setuptools==69.5.1 ninja
 
-# Clone the repository
 WORKDIR /workspace
+
 RUN git clone https://github.com/threestudio-project/threestudio.git
 RUN git clone https://github.com/DSaurus/threestudio-stable-nerf-renderer.git /workspace/threestudio/custom/threestudio-stable-nerf-renderer/
 RUN git clone https://github.com/DSaurus/threestudio-mvdream.git /workspace/threestudio/custom/threestudio-mvdream/
 RUN git clone https://github.com/DSaurus/threestudio-4dfy.git /workspace/threestudio/custom/threestudio-4dfy/
 RUN git clone https://github.com/GGGHSL/GraphDreamer.git
+RUN git clone https://github.com/YangLing0818/Trans4D.git /workspace/Trans4D/
+RUN cp -r /workspace/threestudio/load /workspace/Trans4D/
+RUN git clone https://github.com/bytedance/MVDream.git /workspace/Trans4D/extern/MVDream
+RUN pip install -e /workspace/Trans4D/extern/MVDream 
 
-# Install the requirements
-WORKDIR /workspace/
+RUN git clone --recursive https://github.com/ashawkey/diff-gaussian-rasterization.git /workspace/Trans4D/
+RUN pip install /workspace/Trans4D/diff-gaussian-rasterization
+RUN pip install /workspace/Trans4D/simple-knn
 
 RUN pip install --no-cache-dir torch==2.6.0+cu124 torchvision==0.21.0+cu124 --index-url https://download.pytorch.org/whl/cu124
 RUN pip install --no-cache-dir git+https://github.com/KAIR-BAIR/nerfacc.git@v0.5.2

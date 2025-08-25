@@ -56,8 +56,7 @@ RUN git clone https://github.com/YangLing0818/Trans4D.git /workspace/Trans4D/
 RUN cp -r /workspace/threestudio/load /workspace/Trans4D/
 RUN git clone https://github.com/bytedance/MVDream.git /workspace/Trans4D/extern/MVDream
 RUN pip install -e /workspace/Trans4D/extern/MVDream 
-
-RUN git clone --recursive https://github.com/ashawkey/diff-gaussian-rasterization.git /workspace/Trans4D/
+RUN git clone --recursive https://github.com/ashawkey/diff-gaussian-rasterization.git /workspace/Trans4D/diff-gaussian-rasterization
 RUN pip install /workspace/Trans4D/diff-gaussian-rasterization
 RUN pip install /workspace/Trans4D/simple-knn
 

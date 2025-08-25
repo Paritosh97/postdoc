@@ -7,7 +7,7 @@
 
 \title{Scenario Generation for Interactive Urban Environments}
 \author{Paritosh Sharma, Hui-Yin Wu}
-\date{July 2025}
+\date{August 2025}
 
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -52,40 +52,20 @@ In this section, we first start by reviewing prior work on scenegraph-guided gen
 
 \subsection{Scenegraph-guided Generation}
 
-Scenegraph-guided 3D generation is the process of creating 3D environments by leveraging scene graphs, which are structured representations of the objects and their relationships within a scene. A major advantage of scenegraph-guided generation is that it provides a clear relationship between the elements which allows for better generation than other techniques such as simple text prompts or bounding boxes. Scenethesis~\cite{ling2025scenethesis} uses a Vision-Language Model (VLM) to create a scenegraph with parent-child relationships and localizes objects using 3D bounding boxes. Work by Liu et al.~\cite{liu2025controllable} defines scenegraphs as graphs where instance nodes represent countable objects with semantic and positional features, a singleton road node encodes global scene structure, and edges capture both physical proximity among instances and connectivity to the road. X-Scene~\cite{yang2025x} is another work that uses LLMs (Large-Language Models) to create a scenegraph with nodes (objects) and edges (relationships) to facilitate the generation process. Graphdreamer~\cite{gao2024graphdreamer} employs scenegraphs structured around the Visual Genome~\cite{krishna2017visual} format, where nodes represent objects with associated attributes, and edges encode the relationships between these objects to guide the generation process. Despite the advancements in scenegraph-guided generation, all of these works focus on static scenes and do not consider dynamic scenarios where the state of the objects change over time.
+Scenegraph-guided 3D generation is the process of creating 3D environments by leveraging scene graphs, which are structured representations of the objects and their relationships within a scene. A major advantage of scenegraph-guided generation is that it provides a clear relationship between the elements which allows for better generation than other techniques such as simple text prompts or bounding boxes. Scenethesis~\cite{ling2025scenethesis} uses a Vision-Language Model (VLM) to create a scenegraph with parent-child relationships and localizes objects using 3D bounding boxes. Work by Liu et al.~\cite{liu2025controllable} defines scenegraphs as graphs where instance nodes represent countable objects with semantic and positional features, a singleton road node encodes global scene structure, and edges capture both physical proximity among instances and connectivity to the road. X-Scene~\cite{yang2025x} is another work that uses LLMs (Large-Language Models) to create a scenegraph with nodes (objects) and edges (relationships) to facilitate the generation process. Graphdreamer~\cite{gao2024graphdreamer} employs scenegraphs structured around the Visual Genome~\cite{krishna2017visual} format, where nodes represent objects with associated attributes, and edges encode the relationships between these objects to guide the generation process. Despite the advancements in scenegraph-guided generation, all of these works focus on static scenes and do not consider dynamic scenarios where the state of the objects changes over time.
 
 \subsection{Diffusion-based 4D Generation}
 
-Diffusion models have emerged as a powerful approach for generating high-quality 3D content by iteratively refining a random noise input into a coherent output. Dreamfusion~\cite{poole2022dreamfusion} initially text-to-3D by optimizing gaussian noise to align with the distribution derived from a text-conditioned diffusion model using Score Distillation Sampling (SDS). This was extended to 4D scenes in MaV3D~\cite{singer2023text}, 4d-fy~\cite{bahmani20244d} and Animate124~\cite{zhao2023animate124}. However, these methods struggle with precise spatial and temporal control of the generated content.
+Diffusion models have emerged as a powerful approach for generating high‐quality 3D content by iteratively refining a random noise input into a coherent output. DreamFusion~\cite{poole2022dreamfusion} initially introduced text‐to‐3D synthesis by optimizing a neural radiance field so that rendered views, when noised and denoised by a pretrained text‐conditioned diffusion model, produce identical gradients via Score Distillation Sampling (SDS). This framework was extended to dynamic scenes in MaV3D, which employs video‐based SDS to animate a time‐conditioned radiance field into a 4D scene~\cite{singer2023text}. However, MaV3D’s reliance on a single diffusion prior leads to trade‐offs between appearance fidelity, 3D consistency, and motion realism. 4D‐fy~\cite{bahmani20244d} addresses this by hybridizing three SDS signals—3D‐aware image SDS for geometry, standard image SDS for texture, and video SDS for motion—alternating updates to preserve all three qualities. Animate124~\cite{zhao2023animate124} further refines single‐image animation into 4D using a coarse‐to‐fine 4D grid backbone optimized first with 2D and 3D image priors, then with video diffusion, and finally with a personalized ControlNet fine‐tuning stage to prevent semantic drift. More recently, Trans4D~\cite{zeng2024trans4d} leverages a multimodal large language model to perform physics‐aware 4D scene planning—generating object trajectories, rotations, and transition times—and introduces a Transition Network that predicts point‐wise appearance or disappearance probabilities to realize complex geometry‐aware transitions such as a missile transforming into an explosion cloud. Despite their impressive generative capabilities, these diffusion-based 4D synthesis methods still lack the explicit, structured control afforded by scene graphs, making it difficult to enforce complex object relationships or constraints at generation time.
 
 \subsection{Urban Scenario Generation}
 
-This section discusses pre-existing models used for generating scenarios in urban environments. These models can be broadly classified into procedural and deep generative approaches.
-
-\subsubsection{Procedural Methods}
-
-Procedural methods leverage algorithms and rules to generate urban scenarios, often resulting in highly customizable environments. They can be further divided into two categories:
-
-\paragraph{Classic Procedural Generation} use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}, which allows users to define scenarios using a probabilistic programming language. Similarly, MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework to create urban micromobility scenarios using the Metadrive~\cite{li2022metadrive} simulator.
-
-\paragraph{LLM-based Procedural Generation} can be used to enhance procedural generation with natural language understanding. For example, ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene} use LLMs to generate scenic code from prompts and then define the scenarios in Scenic. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario using an LLM in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}. CityX~\cite{zhang2024cityx} is multi-agent framework that uses LLM to assemble assets using the procedural content generation (PCG) library as well as plan actions for the agents in the scenario.
-
-Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a scenario with a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings. However, no real crossroad would exist in the world that conforms to these specifications.
-
-\subsubsection{Deep-Generative Methods}
-
-Deep-Generative Approaches have recently become popular for various sorts of 3D generation. To create a complete scenario, some techniques use generative models such as GANs, VAEs or Diffusion models in combination with procedural techniques. These can be broadly classified into the following categories:
-
-\paragraph{Procedural Environments with Deep-Generative Dynamics} generate the static aspects of the environment using procedural techniques, while the dynamic aspects such as vehicles and pedestrians are generated using generative models. For example, Chatdyn~\cite{wei2024chatdyn} uses CARLA~\cite{dosovitskiy2017carla} to construct the traffic environment, then populate it with pedestrians and vehicles, each equipped with an LLM agent to generate a high-level scenario plan. This high-level plan is then executed in a low-level PedExecutor using Text2Motion~\cite{guo2024momask} for pedestrians and VehExectutor using a physics-based, history-aware reinforcement learning controller to produce vehicle trajectories.
-
-\paragraph{Procedural Dynamics with Deep-Generative Environments} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld~\cite{shang2024urbanworld} converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm. CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
-
-\paragraph{Complete Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
-
+Urban scenario generation encompasses procedural and deep generative approaches. Procedural methods utilize algorithms and rules to generate customizable urban scenarios, including classic approaches like Scenic~\cite{fremont2019scenic} and MetaUrban~\cite{wu2024metaurban} that rely on probabilistic programming languages and constraint-based generation, as well as LLM-enhanced methods such as ScenicNL~\cite{elmaaroufi2024scenicnl}, ChatScene~\cite{zhang2024chatscene}, TTSG~\cite{ruan2024traffic}, and CityX~\cite{zhang2024cityx} that leverage natural language understanding to generate scenario code and plan traffic conditions. While procedural approaches offer precise control and customization capabilities, they often lack realism due to their reliance on predefined rules that cannot fully capture real-world complexity. Deep generative methods address these limitations through various strategies: procedural environments with deep-generative dynamics (exemplified by Chatdyn~\cite{wei2024chatdyn} which combines CARLA traffic environments with LLM-driven pedestrian and vehicle behavior using Text2Motion for pedestrians and physics-based reinforcement learning controllers for vehicles), procedural dynamics with deep-generative environments (such as UrbanWorld~\cite{shang2024urbanworld} and CityDreamer4D~\cite{xie2024citydreamer} that use depth-aware multi-view diffusion for texture rendering while employing procedural planning for dynamic elements), and complete deep-generative approaches like Infinicube~\cite{lu2024infinicube} and UniScene~\cite{li2025uniscene} that recreate both static and dynamic aspects using learned representations across multiple modalities including semantic occupancy, multi-view video, and LiDAR data.
 
 \subsection{Validation}
 
-Table \ref{tab:validation} lists common qualitative and quantitative validation methods used to evaluate the performance of generative models for urban road-crossing scenarios. These methods assess the quality, realism, and diversity of generated scenarios to ensure they fulfill their intended applications and research needs.
+Table \ref{tab:validation} lists common qualitative and quantitative validation methods used to evaluate the performance of generative models for urban road-crossing scenarios. These methods assess the quality, realism, and diversity of generated scenarios.
+
 \begin{table}[ht]
 \centering
 \caption{Qualitative and Quantitative Evaluation Methods for Road-Crossing Scenarios}
@@ -154,7 +134,7 @@ CityDreamer4D~\cite{xie2025citydreamer4d} tried testing the 3D branch with stati
 
 \subsubsection{Urban Architect}
 
-Urban Architect~\cite{lu2024urban} - Working. Generates images of the urban environment based on the 3D layout.
+Urban Architect~\cite{lu2024urban} - Working. Generates images of the urban environment based on the sample 3D layout provided
 
 \subsubsection{CLIP}
 
@@ -162,7 +142,7 @@ CLIP~\cite{radford2021learning} is a model that can be used to evaluate the qual
 
 \subsubsection{GraphDreamer}
 
-GraphDreamer~\cite{gao2024graphdreamer} breaks for scenegraph to 3d generation because of GPU memory shortage (surpasses 48 GB). Node level 3d generation works though.
+GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours for 1 scenegraph.
 
 \section{Problem and Open Question}
 
@@ -207,26 +187,22 @@ is a closed time interval and $\sigma_{i,k}$ is a symbolic or structured descrip
 
 \item $E \subseteq V \times V$ is a set of directed edges. Each edge $e = (v_i, v_j)$ is augmented by
 \begin{equation}
-e = (v_i, v_j, r_{ij}, \mathcal{I}_{ij}, \delta_{ij}),
+e = (v_i, v_j, r_{ij}),
 \end{equation}
 where
 \begin{itemize}
-\item $r_{ij}$ is the relation type,
-\item $\mathcal{I}_{ij} = \{ J_{ij, \ell} \}_{\ell=1}^{L_{ij}}$ is a set of active time intervals where
-\[
-J_{ij, \ell} = [\tau^{(0)}, \tau^{(1)}] \subseteq \mathcal{T}
-\]
-during which the relation holds,
-\item $\delta_{ij}$ is an optional descriptive field (string or structured metadata) that further explains the relation (e.g., natural language description or a constraint formula).
+\item $v_i$ is the source node,
+\item $v_j$ is the target node,
+\item $r_{ij}$ is the relation type.
 \end{itemize}
 
-\item $\mathcal{T}$ is the global time domain. For normalized scenarios, we can take $\mathcal{T} = [0,1]$; for absolute-time scenarios take $\mathcal{T} = [0,T]$ for some duration $T > 0$.
+\item $\mathcal{T}$ is the global time domain.
 
-\item $\tau: \bigcup_i \mathcal{S}_i \cup \bigcup_{i,j} \mathcal{I}_{ij} \to \mathcal{P}$ is an optional grounding map from temporal states and relations to parameterized representations (e.g., trajectories, kinematic parameters, animation clips, or low-level simulator actions). $\mathcal{P}$ denotes the space of such parameters.
+\item $\tau: \bigcup_i \mathcal{S}_i \cup \bigcup_{i,j} \mathcal{I}_{ij} \to \mathcal{P}$ is an optional grounding map to represent the dynamic aspects w.r.t. to time.
 \end{itemize}
 
 \paragraph{Semantics}
-A dynamic scenegraph $S$ encodes both (i) the \emph{static layout} through attribute maps $\mathcal{A}_i$ and relations $r_{ij}$ that are continuously active (or active on $\mathcal{T}$), and (ii) the \emph{dynamic behaviour} through temporal states $\mathcal{S}_i$ and relation active intervals $\mathcal{I}_{ij}$. The grounding $\tau$ maps symbolic descriptions to concrete, simulator-ready parameters.
+A dynamic scenegraph $S$ encodes both (i) the \emph{static layout} through attribute maps $\mathcal{A}_i$ and relations $r_{ij}$ that are continuously active (or active on $\mathcal{T}$), and (ii) the \emph{dynamic behaviour} through temporal states $\mathcal{S}_i$ and relation active intervals $\mathcal{I}_{ij}$. The grounding $\tau$ represents the animation in 
 
 
 \subsubsection*{Example}
@@ -235,30 +211,86 @@ Figure \ref{fig:scenegraph_example} illustrates the example scenegraph.
 
 \begin{figure}[ht]
 \centering
-\begin{tikzpicture}[>=stealth, node distance=2.2cm, every node/.style={draw, rounded corners, align=center}]
-% Nodes
-\node (env) {environment\\\small{(skybox, day, clear)}};
-\node (house) [right=of env] {house\\\small{(residential)}};
-\node (road) [below=of env] {road\\\small{(asphalt)}};
-\node (foot) [right=of road] {footpath\\\small{(concrete)}};
-\node (car) [left=of road] {car\\\small{(red sedan)}};
-\node (tl) [below=of road, xshift=2.0cm] {traffic\_light\\\small{(green)}};
+\begin{tikzpicture}[
+    % Node styles
+    object/.style={circle, draw=blue!70, fill=blue!10, minimum size=1cm, font=\footnotesize},
+    % Edge styles
+    relation/.style={->, thick, blue!60},
+    % Time interval styles
+    timeaxis/.style={thick, gray},
+    timepoint/.style={circle, fill=red, inner sep=1.5pt},
+    % Attribute styles
+    attr/.style={font=\tiny, align=center}
+]
 
-% Edges
-\draw[->] (car) -- node[midway, above]{OnTop\\$[0,1]$} (road);
-\draw[->] (tl) -- node[midway, right]{Controls\\$[0,1]$} (road);
-\draw[->] (house) -- node[midway, below]{AdjacentTo\\$[0,1]$} (road);
-\draw[->] (foot) -- node[midway, above]{AdjacentTo\\$[0,1]$} (road);
-\draw[->] (foot) -- node[midway, right]{AdjacentTo\\$[0,1]$} (house);
-\draw[->] (env) -- node[midway, left]{Encompasses\\$[0,1]$} (road);
+% Time axis at bottom
+\draw[timeaxis] (-1,0) -- (11,0) node[right] {Time $\mathcal{T}$};
+\foreach \t in {0,0.7,1.0} {
+    \node[timepoint] at ({\t*10},0) {};
+    \node[below, font=\tiny] at ({\t*10},-0.3) {\t};
+}
 
-% Temporal annotations (simple)
-\node[below=0.6cm of car, draw=none] (car_times) {\small{car states: $[0,0.4]$ accel, $[0.4,0.7]$ slow, $[0.7,1.0]$ stop}};
-\node[below=0.6cm of tl, draw=none] (tl_times) {\small{tl states: $[0,0.5]$ green, $[0.5,0.6]$ yellow, $[0.6,1.0]$ red}};
+% Scenegraph nodes V = {v_i}
+\node[object] (sidewalk1) at (2,3) {SW1};
+\node[object] (road) at (5,3) {Road};
+\node[object] (crossing) at (5,4.5) {Cross};
+\node[object] (sidewalk2) at (8,3) {SW2};
+\node[object] (car) at (3.5,1.5) {Car};
+\node[object] (trash) at (8,1.5) {Trash};
+
+% Temporal states visualization for car (moving -> stops) - moved below timeline
+\draw[thick, green!70, decoration={brace,amplitude=3pt,mirror}, decorate] 
+    (0,-0.8) -- (7,-0.8) node[midway,below=5pt,font=\tiny] {Car: moving};
+\draw[thick, red!70, decoration={brace,amplitude=3pt,mirror}, decorate] 
+    (7,-1.2) -- (10,-1.2) node[midway,below=5pt,font=\tiny] {Car: stops};
+
+% Edges (Relations)
+\draw[relation] (sidewalk1) -- (road) node[midway,above,attr] {next\_to};
+\draw[relation] (road) -- (sidewalk2) node[midway,above,attr] {next\_to};
+\draw[relation] (crossing) -- (road) node[midway,left,attr] {on};
+\draw[relation] (car) -- (road) node[midway,above right,attr] {on};
+\draw[relation] (trash) -- (sidewalk2) node[midway,left,attr] {on};
+
+% Attributes (showing sparse attribute map for some objects)
+\node[attr, below=0.2cm of sidewalk1] {type: sidewalk};
+\node[attr, below=0.2cm of road] {type: road\\material: asphalt};
+\node[attr, below=0.2cm of crossing] {type: crossing\\material: paint};
+\node[attr, below=0.2cm of sidewalk2] {type: sidewalk};
+\node[attr, below=0.2cm of car] {type: vehicle\\color: blue};
+\node[attr, below=0.2cm of trash] {type: trash\\material: plastic};
+
+% Temporal intervals for car states - adjusted positions
+\node[font=\tiny, above] at (3.5,-0.5) {$I_{car,1} = [0.0, 0.7)$};
+\node[font=\tiny, above] at (8.5,-0.9) {$I_{car,2} = [0.7, 1.0]$};
+
+% Scene graph equation annotation
+\node[align=left, font=\footnotesize] at (10,6) {
+    $S = (V, E, \mathcal{T}, \tau)$\\
+    $V = \{SW1, Road, Cross, SW2, Car, Trash\}$\\
+    $E \subseteq V \times V$ with relation types\\
+    $\mathcal{T} = [0.0, 1.0]$ (normalized time)
+};
+
+% Legend
+\node[align=left, font=\tiny, draw, fill=white] at (1,6) {
+    \textbf{Legend:}\\
+    \textcolor{blue!70}{\rule{0.5cm}{0.5pt}} Objects (nodes)\\
+    \textcolor{blue!60}{\rule{0.5cm}{0.5pt}$\rightarrow$} Relations (edges)\\
+    \textcolor{green!70}{\rule{0.5cm}{2pt}} Moving state\\
+    \textcolor{red!70}{\rule{0.5cm}{2pt}} Stopped state\\
+    \textcolor{red}{\textbullet} Time points
+};
+
 \end{tikzpicture}
 \caption{Example dynamic scenegraph (nodes, relations with active intervals, and temporal states).}
 \label{fig:scenegraph_example}
 \end{figure}
+
+\subsection{Neural Representation of the Scene}
+
+\subsection{Score Distillation Sampling}
+
+\section{Implementation}
 
 
 
@@ -308,8 +340,34 @@ Figure \ref{fig:scenegraph_example} illustrates the example scenegraph.
     
     \item \textbf{Start with WorkPlan:}     
     
-    \item \textbf{Remove relation between GusT-3D and scenegraphs}
+    \item \textbf{Remove relation between GusT-3D and generation}
 \end{itemize}
+
+
+\subsection{Urban Scenario Generation}
+
+This section discusses pre-existing models used for generating scenarios in urban environments. These models can be broadly classified into procedural and deep generative approaches.
+
+\subsubsection{Procedural Methods}
+
+Procedural methods leverage algorithms and rules to generate urban scenarios, often resulting in highly customizable environments. They can be further divided into two categories:
+
+\paragraph{Classic Procedural Generation} use rules or constraints to generate scenes. The most popular procedural approach used for urban scenarios is Scenic~\cite{fremont2019scenic}, which allows users to define scenarios using a probabilistic programming language. Similarly, MetaUrban~\cite{wu2024metaurban} is a popular urban scenario generation framework to create urban micromobility scenarios using the Metadrive~\cite{li2022metadrive} simulator.
+
+\paragraph{LLM-based Procedural Generation} can be used to enhance procedural generation with natural language understanding. For example, ScenicNL~\cite{elmaaroufi2024scenicnl} and ChatScene~\cite{zhang2024chatscene} use LLMs to generate scenic code from prompts and then define the scenarios in Scenic. TTSG\cite{ruan2024traffic} is another framework that uses an to plan a traffic scenario using an LLM in JSON and then render it using CARLA~\cite{dosovitskiy2017carla}. CityX~\cite{zhang2024cityx} is multi-agent framework that uses LLM to assemble assets using the procedural content generation (PCG) library as well as plan actions for the agents in the scenario.
+
+Even though procedural approaches can be highly customizable and allow for precise control over the generated scenarios, they typically suffer from a lack of realism, as they rely on predefined rules that may not capture the full complexity of real-world environments. However, they can be useful in creating diverse scenarios that adhere to specific constraints or requirements. For example, a scenario with a crossroad with a specific number of lanes, a certain type of road surface, and a defined layout of buildings. However, no real crossroad would exist in the world that conforms to these specifications.
+
+\subsubsection{Deep-Generative Methods}
+
+Deep-Generative Approaches have recently become popular for various sorts of 3D generation. To create a complete scenario, some techniques use generative models such as GANs, VAEs or Diffusion models in combination with procedural techniques. These can be broadly classified into the following categories:
+
+\paragraph{Procedural Environments with Deep-Generative Dynamics} generate the static aspects of the environment using procedural techniques, while the dynamic aspects such as vehicles and pedestrians are generated using generative models. For example, Chatdyn~\cite{wei2024chatdyn} uses CARLA~\cite{dosovitskiy2017carla} to construct the traffic environment, then populate it with pedestrians and vehicles, each equipped with an LLM agent to generate a high-level scenario plan. This high-level plan is then executed in a low-level PedExecutor using Text2Motion~\cite{guo2024momask} for pedestrians and VehExectutor using a physics-based, history-aware reinforcement learning controller to produce vehicle trajectories.
+
+\paragraph{Procedural Dynamics with Deep-Generative Environments} generate the dynamic aspects such as vehicles and pedestrians using procedural techniques. UrbanWorld~\cite{shang2024urbanworld} converts 2.5D urban layout data into a structured 3D city with separated assets, applying depth-aware, multi-view diffusion-based texture rendering and UV inpainting to achieve high-fidelity visuals. It also uses an urban MLLM for designing the world and provides dynamic elements which are planned using a random tree path planning algorithm. CityDreamer4D~\cite{xie2024citydreamer} modularly integrates autoregressive token-based generation, neural rendering (e.g., NeRF-style volumetrics), and procedural traffic modeling to synthesize large-scale, time-varying 3D cities.
+
+\paragraph{Complete Deep-Generative Approaches} recreate the static as well as the dynamic aspects using the learnt representation. Infinicube~\cite{lu2024infinicube} constructs a large, dynamic 3D voxel world from input HD maps, vehicle positions, and text prompts; then, it generates photorealistic driving videos and reconstructs the scene into a manipulable 3D environment by fusing voxel- and video-based representations. UniScene~\cite{li2025uniscene} UniScene generates driving scenes in three modalities—semantic occupancy, multi-view video, and LiDAR—by first producing a controllable, temporally consistent occupancy sequence from BEV layouts. This occupancy then serves as unified geometric–semantic guidance to synthesize realistic videos and point clouds, ensuring cross-modal consistency and editability.
+
 
 \subsection{Scenegraph-Controlled Diffusion}
 

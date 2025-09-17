@@ -156,136 +156,141 @@ This leads to the following open research question:
 \section{Work Plan}
 
 \subsection{Input Scenegraph}
-
 We represent a temporal (dynamic) scenegraph as a tuple
-
 \begin{equation}
 S = (V, E, \mathcal{T}, \tau)
 \end{equation}
-
-where
-
-\begin{itemize}
-\item $V = \{v_i\}_{i=1}^N$ is a finite set of nodes (objects). Each node $v_i$ is itself a tuple
-\begin{equation}
-v_i = (\mathrm{id}_i, \mathcal{A}_i, \mathcal{S}_i),
-\end{equation}
 where
 \begin{itemize}
-\item $\mathrm{id}_i$ is a unique identifier (string),
-\item $\mathcal{A}_i$ is a (possibly sparse) attribute map:
-\[
-\mathcal{A}_i : \mathcal{K} \rightharpoonup \mathcal{V}
-\]
-(e.g., color, type, material),
-\item $\mathcal{S}_i = \{ (I_{i,k}, \sigma_{i,k}) \}_{k=1}^{K_i}$ is an ordered set of temporal states where each
-\[
-I_{i,k} = [t_{i,k}^{(0)}, t_{i,k}^{(1)}] \subseteq \mathcal{T}
-\]
-is a closed time interval and $\sigma_{i,k}$ is a symbolic or structured description of the node's state on that interval (e.g., `accelerates', `stops', or a parametric motion/pose).
+    \item $V = \{v_i\}_{i=1}^N$ is a finite set of nodes (objects). Each node $v_i$ is itself a tuple
+    \begin{equation}
+        v_i = \big(\mathrm{id}_i, \mathcal{A}_i^{\mathrm{static}}, \{(I_{i,k}, \mathcal{A}_i^{\mathrm{dynamic}}|_{I_{i,k}})\}_{k=1}^{K_i} \big),
+    \end{equation}
+    where
+    \begin{itemize}
+        \item $\mathrm{id}_i$ is a unique identifier (string),
+        \item $\mathcal{A}_i^{\mathrm{static}}$ is the attribute map for invariant attributes:
+        \[
+        \mathcal{A}_i^{\mathrm{static}} : K_\mathrm{static} \rightharpoonup V,
+        \]
+        e.g., type, material,
+        \item $\{(I_{i,k}, \mathcal{A}_i^{\mathrm{dynamic}}|_{I_{i,k}})\}$ is an ordered set of temporal states where each
+        \[
+        I_{i,k} = [t_{i,k}(0), t_{i,k}(1)] \subseteq \mathcal{T}
+        \]
+        is a closed time interval, and $\mathcal{A}_i^{\mathrm{dynamic}}|_{I_{i,k}}$ are the dynamic attribute values valid for that interval (e.g., position, lid state, traffic-light color).
+    \end{itemize}
+    \item $E \subseteq V \times V$ is a set of directed edges. Each edge $e = (v_i, v_j)$ is augmented by
+    \begin{equation}
+        e = (v_i, v_j, r_{ij}, C_{ij}),
+    \end{equation}
+    where
+    \begin{itemize}
+        \item $v_i$ is the source node,
+        \item $v_j$ is the target node,
+        \item $r_{ij}$ is the relation type (e.g., ``next\_to'', ``controls''),
+        \item $C_{ij}$ is an optional constraint function mapping dynamic attributes of $v_i$ to changes in $v_j$ (e.g., if traffic light changes to red, car stops).
+    \end{itemize}
+    \item $\mathcal{T}$ is the global time domain.
+    \item $\tau: \bigcup_i \mathcal{S}_i \cup \bigcup_{i,j} \mathcal{I}_{ij} \to \mathcal{P}$ is an optional grounding map to represent the dynamic aspects w.r.t.\ time.
 \end{itemize}
 
-\item $E \subseteq V \times V$ is a set of directed edges. Each edge $e = (v_i, v_j)$ is augmented by
-\begin{equation}
-e = (v_i, v_j, r_{ij}),
-\end{equation}
-where
-\begin{itemize}
-\item $v_i$ is the source node,
-\item $v_j$ is the target node,
-\item $r_{ij}$ is the relation type.
-\end{itemize}
-
-\item $\mathcal{T}$ is the global time domain.
-
-\item $\tau: \bigcup_i \mathcal{S}_i \cup \bigcup_{i,j} \mathcal{I}_{ij} \to \mathcal{P}$ is an optional grounding map to represent the dynamic aspects w.r.t. to time.
-\end{itemize}
-
-\paragraph{Semantics}
-A dynamic scenegraph $S$ encodes both (i) the \emph{static layout} through attribute maps $\mathcal{A}_i$ and relations $r_{ij}$ that are continuously active (or active on $\mathcal{T}$), and (ii) the \emph{dynamic behaviour} through temporal states $\mathcal{S}_i$ and relation active intervals $\mathcal{I}_{ij}$. The grounding $\tau$ represents the animation in 
-
+\paragraph{Semantics}  
+A dynamic scenegraph $S$ encodes both
+\begin{enumerate}
+    \item the \emph{static layout} through static attributes $\mathcal{A}_i^{\mathrm{static}}$ and relations $r_{ij}$ that are continuously active (or active on $\mathcal{T}$),
+    \item the \emph{dynamic behaviour} through temporal attributes $\mathcal{A}_i^{\mathrm{dynamic}}$ and constraint relations $C_{ij}$ between nodes.
+\end{enumerate}
 
 \subsubsection*{Example}
-
-Figure \ref{fig:scenegraph_example} illustrates the example scenegraph.
+Figure \ref{fig:dynamic_scenegraph_example} illustrates the example dynamic scenegraph.
 
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
-    % Node styles
     object/.style={circle, draw=blue!70, fill=blue!10, minimum size=1cm, font=\footnotesize},
-    % Edge styles
     relation/.style={->, thick, blue!60},
-    % Time interval styles
+    constraint/.style={->, thick, red!70, dashed},
     timeaxis/.style={thick, gray},
     timepoint/.style={circle, fill=red, inner sep=1.5pt},
-    % Attribute styles
     attr/.style={font=\tiny, align=center}
 ]
-
-% Time axis at bottom
+% Time axis
 \draw[timeaxis] (-1,0) -- (11,0) node[right] {Time $\mathcal{T}$};
 \foreach \t in {0,0.7,1.0} {
     \node[timepoint] at ({\t*10},0) {};
     \node[below, font=\tiny] at ({\t*10},-0.3) {\t};
 }
 
-% Scenegraph nodes V = {v_i}
+% Nodes
 \node[object] (sidewalk1) at (2,3) {SW1};
 \node[object] (road) at (5,3) {Road};
 \node[object] (crossing) at (5,4.5) {Cross};
 \node[object] (sidewalk2) at (8,3) {SW2};
 \node[object] (car) at (3.5,1.5) {Car};
 \node[object] (trash) at (8,1.5) {Trash};
+\node[object] (light) at (6.5,1.5) {Light};
 
-% Temporal states visualization for car (moving -> stops) - moved below timeline
-\draw[thick, green!70, decoration={brace,amplitude=3pt,mirror}, decorate] 
-    (0,-0.8) -- (7,-0.8) node[midway,below=5pt,font=\tiny] {Car: moving};
-\draw[thick, red!70, decoration={brace,amplitude=3pt,mirror}, decorate] 
-    (7,-1.2) -- (10,-1.2) node[midway,below=5pt,font=\tiny] {Car: stops};
+% Temporal states visualization
+\draw[thick, green!70, decoration={brace,amplitude=3pt,mirror}, decorate]
+(0,-0.8) -- (7,-0.8) node[midway,below=5pt,font=\tiny] {Car: moving};
+\draw[thick, red!70, decoration={brace,amplitude=3pt,mirror}, decorate]
+(7,-1.2) -- (10,-1.2) node[midway,below=5pt,font=\tiny] {Car: stops};
+\draw[thick, green!70, decoration={brace,amplitude=3pt,mirror}, decorate]
+(0,-1.8) -- (6,-1.8) node[midway,below=5pt,font=\tiny] {Light: green};
+\draw[thick, red!70, decoration={brace,amplitude=3pt,mirror}, decorate]
+(6,-2.2) -- (10,-2.2) node[midway,below=5pt,font=\tiny] {Light: red};
 
-% Edges (Relations)
+% Relations
 \draw[relation] (sidewalk1) -- (road) node[midway,above,attr] {next\_to};
-\draw[relation] (road) -- (sidewalk2) node[midway,above,attr] {next\_to};
+\draw[relation] (sidewalk2) -- (road) node[midway,above,attr] {next\_to};
 \draw[relation] (crossing) -- (road) node[midway,left,attr] {on};
 \draw[relation] (car) -- (road) node[midway,above right,attr] {on};
 \draw[relation] (trash) -- (sidewalk2) node[midway,left,attr] {on};
+\draw[relation] (light) -- (road) node[midway,above,attr] {on};
 
-% Attributes (showing sparse attribute map for some objects)
+% Constraint
+\draw[constraint] (light) -- (car) node[midway,above,red!70,attr] {controls};
+
+% Attributes
 \node[attr, below=0.2cm of sidewalk1] {type: sidewalk};
 \node[attr, below=0.2cm of road] {type: road\\material: asphalt};
 \node[attr, below=0.2cm of crossing] {type: crossing\\material: paint};
 \node[attr, below=0.2cm of sidewalk2] {type: sidewalk};
 \node[attr, below=0.2cm of car] {type: vehicle\\color: blue};
-\node[attr, below=0.2cm of trash] {type: trash\\material: plastic};
+\node[attr, below=0.2cm of trash] {type: trash\\material: plastic\\lid: closed/open};
+\node[attr, below=0.2cm of light] {type: traffic light\\state: green/red};
 
-% Temporal intervals for car states - adjusted positions
+% Temporal intervals
 \node[font=\tiny, above] at (3.5,-0.5) {$I_{car,1} = [0.0, 0.7)$};
 \node[font=\tiny, above] at (8.5,-0.9) {$I_{car,2} = [0.7, 1.0]$};
+\node[font=\tiny, above] at (5.5,-1.5) {$I_{light,1} = [0.0, 0.6)$};
+\node[font=\tiny, above] at (8,-1.9) {$I_{light,2} = [0.6, 1.0]$};
 
 % Scene graph equation annotation
 \node[align=left, font=\footnotesize] at (10,6) {
-    $S = (V, E, \mathcal{T}, \tau)$\\
-    $V = \{SW1, Road, Cross, SW2, Car, Trash\}$\\
-    $E \subseteq V \times V$ with relation types\\
-    $\mathcal{T} = [0.0, 1.0]$ (normalized time)
+$S = (V, E, \mathcal{T}, \tau)$\\
+$V = \{SW1, Road, Cross, SW2, Car, Trash, Light\}$\\
+$E \subseteq V \times V$ with relation and constraint types\\
+$\mathcal{T} = [0.0, 1.0]$ (normalized time)
 };
 
 % Legend
 \node[align=left, font=\tiny, draw, fill=white] at (1,6) {
-    \textbf{Legend:}\\
-    \textcolor{blue!70}{\rule{0.5cm}{0.5pt}} Objects (nodes)\\
-    \textcolor{blue!60}{\rule{0.5cm}{0.5pt}$\rightarrow$} Relations (edges)\\
-    \textcolor{green!70}{\rule{0.5cm}{2pt}} Moving state\\
-    \textcolor{red!70}{\rule{0.5cm}{2pt}} Stopped state\\
-    \textcolor{red}{\textbullet} Time points
+\textbf{Legend:}\\
+\textcolor{blue!70}{\rule{0.5cm}{0.5pt}} Objects (nodes)\\
+\textcolor{blue!60}{\rule{0.5cm}{0.5pt}$\rightarrow$} Relations (edges)\\
+\textcolor{red!70}{\rule{0.5cm}{0.5pt}$\dashrightarrow$} Constraint edges (behavioral dependencies)\\
+\textcolor{green!70}{\rule{0.5cm}{2pt}} Moving state\\
+\textcolor{red!70}{\rule{0.5cm}{2pt}} Stopped state\\
+\textcolor{green!70}{\rule{0.5cm}{2pt}} Light green state\\
+\textcolor{red!70}{\rule{0.5cm}{2pt}} Light red state\\
+\textcolor{red}{\textbullet} Time points
 };
-
 \end{tikzpicture}
-\caption{Example dynamic scenegraph (nodes, relations with active intervals, and temporal states).}
-\label{fig:scenegraph_example}
+\caption{Example dynamic scenegraph with constraints (nodes, relations with active intervals, temporal states, and dependency edges).}
+\label{fig:dynamic_scenegraph_example}
 \end{figure}
-
 \subsection{Neural Representation of the Scene}
 
 \subsection{Score Distillation Sampling}

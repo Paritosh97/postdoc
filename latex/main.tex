@@ -81,6 +81,11 @@ The GUsT-3D framework~\cite{wu2022designing} addresses this by first defining th
 
 \subsection{Generative Models for Urban Scenario Generation}
 
+\subsubsection{Image-based Generation}
+
+Diffusion models have shown impressive results in generating high-quality images from textual descriptions. Models like DALL-E 2~\cite{ramesh2022hierarchical}, Imagen~\cite{saharia2022photorealistic}, and Stable Diffusion~\cite{rombach2022high} have demonstrated the ability to create diverse and realistic images based on text prompts. Recent works such as GameNGen~\cite{valevski2024diffusion}, Genie~\cite{bruce2024genie}, and DIAMOND~\cite{alonso2024diffusion} have shown the potential of diffusion models to generate game environments in real-time. However, these models suffer from latency issues since they are not truly 3D and generate image-by-image.
+
+
 \subsubsection{Prompts}
 
 Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of LLMs like GPT-3, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table \ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
@@ -242,7 +247,7 @@ GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours
 \section{Problem and Open Question}
 
 %To add generative capabilities to frameworks like GusT-3D~\cite{wu2022designing}, have demonstrated the use of scenegraphs and task specifications for pedestrian-in-the-loop simulations. However, these methods are limited in their ability to scale, as they lack generative capabilities needed to produce diverse and realistic scenarios. 
-While recent diffusion-based generative models have demonstrated strong capabilities in synthesizing urban scenes from static layouts, they remain limited in their ability to model dynamic urban scenarios. In particular, they struggle to provide precise spatial and temporal control over objects and their interactions, which is essential for simulating a realistic traffic scenario.
+While recent generative models have demonstrated strong capabilities in synthesizing urban scenes from static layouts, they remain limited in their ability to model dynamic urban scenarios. In particular, they struggle to provide precise spatial and temporal control over objects and their interactions, which is essential for simulating a realistic traffic scenario.
 
 This leads to the following open research question:
 
@@ -252,7 +257,7 @@ This leads to the following open research question:
 
 \subsection{Model Architecture}
 
-Figure~\ref{fig:model_architecture} illustrates the proposed model architecture for generating dynamic urban scenarios. The model takes a scenario prompt as input, which is processed by a multimodal large language model (MLLM) to extract four key components: scene background, static layout, dynamic layout, and tasks. Each component is then handled by specialized modules to generate the final 3D dynamic scene.
+Figure~\ref{fig:model_architecture} illustrates the proposed model architecture for generating dynamic urban scenarios. The model takes a scenario prompt as input, which is processed by a multimodal large language model (MLLM) to extract two key components: layout and tasks. Each component is then handled by specialized modules to generate the final 3D dynamic scene.
 
 \begin{figure}[ht]
 \centering
@@ -264,74 +269,45 @@ Figure~\ref{fig:model_architecture} illustrates the proposed model architecture 
       minimum width=2.5cm, minimum height=0.8cm, font=\small},
     sub/.style={rectangle, draw, align=center,
       minimum width=2.3cm, minimum height=0.6cm, font=\scriptsize},
-    ex/.style={rectangle, draw, fill=gray!10, align=left,
-      minimum width=2.5cm, minimum height=0.8cm, font=\scriptsize},
     arrow/.style={-Stealth, thick},
     panel/.style={draw,dashed, rounded corners, inner sep=0.2cm}
   }
 
-% ----- Panel (a): Input and Splitting with MLLM labeled edges -----
-\node[block, minimum height=1.2cm, text width=7cm, align=center] (input) {%
-  \textbf{Scenario Prompt} \\[2pt]
-};
+  % ----- Panel (a): Input and Splitting -----
+  \node[block, minimum height=1.2cm, text width=7cm, align=center] (input) {%
+    \textbf{Scenario Prompt} \\[2pt]
+  };
 
-% Four outputs below input (compact spacing)
-\node[sub, below=2cm of input] (p1) {Scene Background};
-\node[sub, below=1cm of p1] (p2) {2D Static Layout};
-\node[sub, below=2cm of p2] (p3) {2D Dynamic Layout};
-\node[sub, below=2cm of p3] (p4) {Tasks};
+  % Three outputs below input
+  \node[sub, below=1cm of input] (p2) {2D Static Layout};
+  \node[sub, right=2cm of input] (p4) {Tasks};
 
-\node[panel, fit=(input)(p4), label=above left:(a) Prompt \& Split] {};
+  % ----- Panel (b): Static Scene Generator -----
+  \node[block, right=3cm of p2] (c1) {Fitted 2D Layout};
+  \node[block, right=1.5cm of c1] (c2) {3D Primitive Layout};
+  \node[block, right=1.5cm of c2] (c3) {3D Scene};
 
-% Panel (b)
-\node[block, right=2cm of p1] (b1) {Skybox};
-\node[panel, fit=(p1)(b1), label=above right:(b) Background Generator] {};
+  % ----- Arrows -----
+  \draw[arrow] (input.south) -- node[right, font=\scriptsize, fill=white, inner sep=1pt] {MLLM} (p2.north);
+  \draw[arrow] (input.east) -- node[right, font=\scriptsize, fill=white, inner sep=1pt] {MLLM} (p4.west);
+  \draw[arrow] (p2.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {2D Layout Diffusion} (c1.west);
+  \draw[arrow] (c1.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {3D lifting} (c2.west);
+  \draw[arrow] (c2.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {VSD} (c3.west);
 
-% Panel (c)
-\node[block, right=3cm of p2] (c1) {Fitted 2D Layout};
-\node[block, right=1.5cm of c1] (c2) {3D Primitive Layout};
-\node[block, right=1.5cm of c2] (c3) {3D Scene};
-\node[panel, fit=(p2)(c1)(c2)(c3), label=above right:(c) Static Scene Generator] {};
-
-
-% Panel (d)
-\node[block, above right=0.1cm and 1.5cm of p3] (d1) {2D Trajectories};
-\node[block, right=2.5cm of d1] (d2) {Refined 2D Trajectories};
-\node[block, below right=0.1cm and 1.5cm of p3] (d3) {Object States};
-\node[block, right=2.5cm of d3] (d4) {Shape and Texture Keys};
-\node[panel, fit=(p3)(d1)(d2)(d3)(d4), label=above left:(d) Dynamics Generator] {};
-
-
-
-\draw[arrow] (input.south) -- node[right, font=\scriptsize, fill=white, inner sep=1pt] {MLLM} (p1.north);
-
-
-\draw[arrow] (p1.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {360° Diffusion} (b1.west);
-
-
-
-\draw[arrow] (p2.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {2D Layout Diffusion} (c1.west);
-\draw[arrow] (c1.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {3D lifting} (c2.west);
-\draw[arrow] (c2.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {VSD} (c3.west);
-
-
-
-\draw[arrow] (p3.east) -- (d1.west);
-\draw[arrow] (p3.east) -- (d3.west);
-\draw[arrow] (d1.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {2D Trajectory Fit} (d2.west);
-\draw[arrow] (d3.east) -- node[above, font=\scriptsize, fill=white, inner sep=1pt] {Object State VSD} (d4.west);
-
-
+  % ----- Images below corresponding boxes -----
+  %\node[left=0.4cm of p2] (img2) {\includegraphics[width=2.5cm]{images/gemini_static_example.png}};
+  %\node[below=0.4cm of c3] (img1) {\includegraphics[width=2.5cm]{images/scene_example.png}};
 
 \end{tikzpicture}%
 }
-\caption{Model architecture}
+\caption{Model Architecture}
 \label{fig:model_architecture}
 \end{figure}
 
+
 \subsection{Input and Splitting}
 
-We first use a multimodal large language model (MLLM) (eg. GPT) to process the input prompt and split it into four components: scene background, static layout, dynamic layout, and tasks. The classes in the static and the dynamic layout are based on the KITTI-360~\cite{liao2022kitti360} dataset. Here is an example of how the input prompt can be split:
+We first use a multimodal large language model (MLLM) (eg. Gemini) to process the input prompt and split it into the layout and tasks. The classes in the layout are based on the KITTI-360~\cite{liao2022kitti360} dataset. Here is an example of how the input prompt can be split:
 
 \begin{tcolorbox}[examplebox, title=Scene Specification Format]
 
@@ -340,7 +316,6 @@ We first use a multimodal large language model (MLLM) (eg. GPT) to process the i
 You are an urban scenario planning assistant with a pedestrian agent. For any urban scene prompt, parse the scene and output a strictly formatted JSON object containing:\\
 
 \begin{itemize}
-  \item \textbf{scene\_background:} weather, time\_of\_day
   
   \item \textbf{static\_layout:} 
     A \begin{math} 500  \times 500 \end{math} 2D layout map represented as an array of objects.  
@@ -365,13 +340,6 @@ You are an urban scenario planning assistant with a pedestrian agent. For any ur
         \item \texttt{trajectory\_description}: an array of states, where each state is of the form  
           \{"time": t, "position": [x, y]\} with time normalized between 0 and 1  
         \end{itemize}
-
-      \item \texttt{states}: array describing object states, including  
-      \begin{itemize}
-        \item \texttt{shape}  
-        \item \texttt{texture\_keys}  
-        \item \texttt{timing}: normalized values (0–1) matching trajectory progression  
-      \end{itemize}
     \end{itemize}
 
   \item \textbf{tasks:} ordered list of actions to be performed by the pedestrian
@@ -381,112 +349,39 @@ If details are missing, fill with realistic defaults. Only output valid JSON.\\
 
 \textbf{Example input}: \\
 
-Afternoon at a busy four-way intersection: two cars turning left, cyclist waiting. Agent must yield, stop at pedestrian light, proceed when green.
+A busy urban intersection with sidewalks, two cars and a pedestrian crossing. Include a building and a traffic light.
 
-\textbf{Example output}: \\
+\noindent\textbf{Example Output:}
+
+\textbf{Static layout:}
+\includegraphics[width=0.8\linewidth]{images/gemini_static_example.png}
+
+\label{fig:gemini_static_example}
+
+\vspace{1em}
+
+\textbf{Trajectories:}
+\includegraphics[width=0.8\linewidth]{images/gemini_dynamic_example.png}
 
 
-\begin{scriptsize}
-\begin{verbatim}
-{
-  "scene_background": {
-    "weather": "clear",
-    "time_of_day": "afternoon"
-  },
-  "static_layout": [
-    {"id": "road_1", "type": "road", "position": [0, 200], "size": [500, 100]},
-    {"id": "road_2", "type": "road", "position": [200, 0], "size": [100, 500]},
-    {"id": "sidewalk_1", "type": "sidewalk", "position": [0, 300], "size": [500, 20]},
-    {"id": "sidewalk_2", "type": "sidewalk", "position": [300, 0], "size": [20, 500]},
-    {"id": "traffic_sign_north", "type": "traffic sign", "position": [245, 180], "size": [2, 5]},
-    {"id": "traffic_sign_south", "type": "traffic sign", "position": [255, 320], "size": [2, 5]},
-    {"id": "traffic_sign_east", "type": "traffic sign", "position": [320, 245], "size": [5, 2]},
-    {"id": "traffic_sign_west", "type": "traffic sign", "position": [180, 255], "size": [5, 2]},
-    {"id": "lamp_1", "type": "lamp", "position": [230, 230], "size": [1, 5]},
-    {"id": "lamp_2", "type": "lamp", "position": [270, 270], "size": [1, 5]},
-    {"id": "car_01", "type": "car", "position": [110, 50], "orientation": 0, "size": [4, 2]},
-    {"id": "car_02", "type": "car", "position": [390, 450], "orientation": 0, "size": [4, 2]},
-    {"id": "cyclist_01", "type": "bicycle", "position": [0, 0], "orientation": 0, "size": [2, 1]},
-    {"id": "pedstrian_light_1", "type": "traffic light", "position": [250, 250], "size": [1, 3]}
-  ],
-  "dynamic_layout": {
-    "trajectories": [
-      {
-        "id": "car_01",
-        "type": "car",
-        "initial_position": [100, 210],
-        "trajectory_description": [
-          {"time": 0.0, "position": [100, 210]},
-          {"time": 0.25, "position": [200, 210]},
-          {"time": 0.5, "position": [250, 250]},
-          {"time": 0.75, "position": [270, 300]},
-          {"time": 1.0, "position": [300, 400]}
-        ]
-      },
-      {
-        "id": "car_02",
-        "type": "car",
-        "initial_position": [400, 290],
-        "trajectory_description": [
-          {"time": 0.0, "position": [400, 290]},
-          {"time": 0.25, "position": [300, 290]},
-          {"time": 0.5, "position": [250, 250]},
-          {"time": 0.75, "position": [230, 200]},
-          {"time": 1.0, "position": [200, 100]}
-        ]
-      },
-      {
-        "id": "cyclist_01",
-        "type": "bicycle",
-        "initial_position": [260, 350],
-        "trajectory_description": [
-          {"time": 0.0, "position": [260, 350]},
-          {"time": 0.25, "position": [260, 350]},
-          {"time": 0.5, "position": [260, 350]},
-          {"time": 0.75, "position": [260, 320]},
-          {"time": 1.0, "position": [260, 280]}
-        ]
-      }
-    ],
-    "states": [
-      {
-        "id": "pedstrian_light_1",
-        "texture_keys": ["red", "green"],
-        "timing": [0.5]
-      }
-    ]
-  },
-  "tasks": [
-    "walk to the road_1",
-    "stop at the pedstrian_light_1",
-    "wait until pedstrian_light_1 turns green",
-    "cross road_1"
-  ]
-}
-\end{verbatim}
-\end{scriptsize}
+\label{fig:gemini_dynamic_example}
+
+
+\textbf{Tasks:}
+\begin{itemize}[leftmargin=1.2em]
+    \item Walk from your starting position at [275, 275] to the edge of the crosswalk at [275, 260].
+    \item Wait for the pedestrian signal to allow crossing the horizontal road.
+    \item Cross the street to the opposite sidewalk, arriving at [275, 240].
+\end{itemize}
+
 
 \end{tcolorbox}
 
-\subsection{Scene Background Generation}
-
-A 360° diffusion model~\cite{feng2023diffusion360} can be used to generate a skybox from the scene background description provided by the MLLM. This skybox serves as the backdrop for the entire urban scenario to be used in Unity as a skybox material.
-
 \subsection{Static Scene Generation}
 
-The initial static layout given by the MLLM may not be perfectly aligned with realistic urban scenes. Therefore, we first use a 2D layout diffusion model trained on Kitti-360 2D layouts to obtain a more plausible configuration which matches the prior distribution. This refined 2D layout is then lifted into a 3D primitive layout. Finally, we employ a variational score distillation (VSD) approach to generate a detailed 3D scene from the 3D primitive layout as shown in~\cite{lu2024urban}.
+The
 
-\subsection{Dynamics Generation}
-
-The dynamic layout consists of two components: trajectories and object states. The trajectories describe the movement of dynamic objects over time, while the object states provide information about their shape and texture at different time points.
-
-\subsubsection{Trajectory Fitting}
-
-Just like the static layout refining, we can use a 2D trajectory diffusion model to refine the initial trajectories provided by the MLLM. 
-
-\subsubsection{Object State Generation using VSD}
-
-Apart from trajectories, the dynamic layout also includes object states that describe the shape and texture of dynamic objects at different time points. For this, we need to extend the VSD approach to optimize the 3D object generation for each temporal snapshot.
+The initial static layout given by the MLLM may not be perfectly aligned with realistic urban scenes. Therefore, we first use a 2D layout discrete diffusion model trained on Kitti-360 2D layouts to obtain a more plausible configuration which matches the prior distribution. This refined 2D layout is then lifted into a 3D primitive layout. Finally, we employ a variational score distillation (VSD) approach to generate a detailed 3D scene from the 3D primitive layout as shown in~\cite{lu2024urban}.
 
 \subsection{Tasks}
 
@@ -553,6 +448,16 @@ Apart from trajectories, the dynamic layout also includes object states that des
 
     \item \textbf{Use Layout:} Graphdreamer based score distillation doesn't work, use layout instead.
 \end{itemize}
+\end{itemize}
+
+\subsubsection{29/09/2025}    
+
+\begin{itemize}
+    \item \textbf{Organize docs and notes:} Clarify the layout preferably with images.
+    
+    \item \textbf{Add missing citations:} Add missing citations for stuff like scene background generation in the workplan.
+
+    \item \textbf{Detail:} Detail the missing sections more.
 \end{itemize}
 
 

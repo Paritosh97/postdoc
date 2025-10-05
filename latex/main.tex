@@ -307,6 +307,8 @@ Figure~\ref{fig:model_architecture} illustrates the proposed model architecture 
 
 \subsection{Input and Splitting}
 
+Since no existing datasets provide paired text prompts with corresponding urban layouts and tasks, we propose leveraging the capabilities of MLLMs to parse and structure input prompts. Similar approaches have been explored in prior works, such as ChatDyn~\cite{wei2024chatdyn} for action planning, LayoutGPT~\cite{feng2023layoutgpt} for layout generation, and LLM-grounded Diffusion~\cite{lian2023llm} for LLM-conditioned image synthesis.
+
 We first use a multimodal large language model (MLLM) (eg. Gemini) to process the input prompt and split it into the layout and tasks. The classes in the layout are based on the KITTI-360~\cite{liao2022kitti360} dataset. Here is an example of how the input prompt can be split:
 
 \begin{tcolorbox}[examplebox, title=Scene Specification Format]

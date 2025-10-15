@@ -6,9 +6,12 @@
 \usepackage{booktabs}  
 \usepackage[most]{tcolorbox}
 
+\usepackage[most]{tcolorbox}
+
 
 \title{Scenario Generation for Interactive Urban Environments}
 \author{Paritosh Sharma, Hui-Yin Wu}
+\date{September 2025}
 \date{September 2025}
 
 \usepackage{graphicx}
@@ -48,6 +51,31 @@
     left=5pt, right=5pt, top=5pt, bottom=5pt
   }
 }
+\usetikzlibrary{shadows,arrows.meta,positioning,fit}
+
+\tikzset{
+  module/.style={rectangle, rounded corners=6pt, draw=orange!80!black, very thick, fill=black!90, 
+                 text=white, align=left, font=\bfseries, minimum width=3.5cm, minimum height=2cm},
+  subtext/.style={font=\scriptsize\color{white}, align=left},
+  arrow/.style={-{Latex[length=3mm]}, thick, orange!80!black},
+}
+
+\tcbuselibrary{listings, breakable}
+
+% Define a style for examples
+\tcbset{
+  examplebox/.style={
+    colback=blue!3!white,
+    colframe=blue!60!black,
+    coltitle=black,
+    fonttitle=\bfseries,
+    sharp corners,
+    boxrule=0.6pt,
+    breakable,
+    enhanced,
+    left=5pt, right=5pt, top=5pt, bottom=5pt
+  }
+}
 
 \begin{document}
 
@@ -61,6 +89,7 @@
 
 \section{Context and objectives}
 
+The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized training scenarios in urban environments.
 The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized training scenarios in urban environments.
 
 \section{Introduction}
@@ -231,6 +260,7 @@ CityDreamer4D~\cite{xie2025citydreamer4d} tried testing the 3D branch with stati
 \subsubsection{Urban Architect}
 
 Urban Architect~\cite{lu2024urban} - Working. Can generate semantic maps and depth maps from a layout input. Which then can be used to generate the 3D scene. However, the code has to be adapted to generate using multiple GPUs due VRAM limitations.
+Urban Architect~\cite{lu2024urban} - Working. Can generate semantic maps and depth maps from a layout input. Which then can be used to generate the 3D scene. However, the code has to be adapted to generate using multiple GPUs due VRAM limitations.
 
 \subsubsection{CLIP}
 
@@ -238,6 +268,7 @@ CLIP~\cite{radford2021learning} is a model that can be used to evaluate the qual
 
 \subsubsection{GraphDreamer}
 
+GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours for 1 scenegraph. However, cannot generate complex scenes.
 GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours for 1 scenegraph. However, cannot generate complex scenes.
 
 \section{Problem and Open Question}
@@ -247,6 +278,7 @@ While recent generative models have demonstrated strong capabilities in synthesi
 
 This leads to the following open research question:
 
+\textbf{How can we design a generative model that can create dynamic urban scenarios with precise spatial and temporal control over objects and their interactions?}
 \textbf{How can we design a generative model that can create dynamic urban scenarios with precise spatial and temporal control over objects and their interactions?}
 
 \section{Work Plan}

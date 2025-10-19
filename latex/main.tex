@@ -6,12 +6,9 @@
 \usepackage{booktabs}  
 \usepackage[most]{tcolorbox}
 
-\usepackage[most]{tcolorbox}
-
 
 \title{Scenario Generation for Interactive Urban Environments}
 \author{Paritosh Sharma, Hui-Yin Wu}
-\date{September 2025}
 \date{September 2025}
 
 \usepackage{graphicx}
@@ -51,31 +48,6 @@
     left=5pt, right=5pt, top=5pt, bottom=5pt
   }
 }
-\usetikzlibrary{shadows,arrows.meta,positioning,fit}
-
-\tikzset{
-  module/.style={rectangle, rounded corners=6pt, draw=orange!80!black, very thick, fill=black!90, 
-                 text=white, align=left, font=\bfseries, minimum width=3.5cm, minimum height=2cm},
-  subtext/.style={font=\scriptsize\color{white}, align=left},
-  arrow/.style={-{Latex[length=3mm]}, thick, orange!80!black},
-}
-
-\tcbuselibrary{listings, breakable}
-
-% Define a style for examples
-\tcbset{
-  examplebox/.style={
-    colback=blue!3!white,
-    colframe=blue!60!black,
-    coltitle=black,
-    fonttitle=\bfseries,
-    sharp corners,
-    boxrule=0.6pt,
-    breakable,
-    enhanced,
-    left=5pt, right=5pt, top=5pt, bottom=5pt
-  }
-}
 
 \begin{document}
 
@@ -89,7 +61,6 @@
 
 \section{Context and objectives}
 
-The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized training scenarios in urban environments.
 The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized training scenarios in urban environments.
 
 \section{Introduction}
@@ -260,7 +231,6 @@ CityDreamer4D~\cite{xie2025citydreamer4d} tried testing the 3D branch with stati
 \subsubsection{Urban Architect}
 
 Urban Architect~\cite{lu2024urban} - Working. Can generate semantic maps and depth maps from a layout input. Which then can be used to generate the 3D scene. However, the code has to be adapted to generate using multiple GPUs due VRAM limitations.
-Urban Architect~\cite{lu2024urban} - Working. Can generate semantic maps and depth maps from a layout input. Which then can be used to generate the 3D scene. However, the code has to be adapted to generate using multiple GPUs due VRAM limitations.
 
 \subsubsection{CLIP}
 
@@ -268,7 +238,6 @@ CLIP~\cite{radford2021learning} is a model that can be used to evaluate the qual
 
 \subsubsection{GraphDreamer}
 
-GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours for 1 scenegraph. However, cannot generate complex scenes.
 GraphDreamer~\cite{gao2024graphdreamer} works but generation takes over 30 hours for 1 scenegraph. However, cannot generate complex scenes.
 
 \section{Problem and Open Question}
@@ -278,7 +247,6 @@ While recent generative models have demonstrated strong capabilities in synthesi
 
 This leads to the following open research question:
 
-\textbf{How can we design a generative model that can create dynamic urban scenarios with precise spatial and temporal control over objects and their interactions?}
 \textbf{How can we design a generative model that can create dynamic urban scenarios with precise spatial and temporal control over objects and their interactions?}
 
 \section{Work Plan}
@@ -434,15 +402,12 @@ You are an urban scenario planning assistant. For the following urban scene prom
 \textbf{Static layout:}\\
 \includegraphics[width=0.8\linewidth]{images/gemini_static.png}
 
-\label{fig:gemini_static_example}
 
 \vspace{1em}
 
 \textbf{Trajectories:}\\
 \includegraphics[width=0.8\linewidth]{images/gemini_dynamic.png}
 
-
-\label{fig:gemini_dynamic_example}
 
 
 \textbf{Tasks:}
@@ -457,153 +422,70 @@ JSON for the above available in appendix section~\ref{app:examples:example_json}
 
 \end{tcolorbox}
 
-\subsection{Static Scene Generation}
+\subsection{Multinomial Diffusion for Semantic Map Generation}
 
 \begin{tcolorbox}
 
-\textbf{Input example}: MLLM prediction: "A residential street with 2 cars parked on the right, a traffic light at the intersection, and sidewalks on both sides" \\
+\textbf{Input example}: \\
 
-\textbf{Output example}: High-resolution semantic segmentation map (128×128) with precise pixel-wise classifications for 60 semantic categories including roads, buildings, vehicles, and infrastructure elements
+
+
+\textbf{Output example}: \\
 
 \end{tcolorbox}
 
-The static scene generation pipeline transforms MLLM-predicted bounding box layouts into detailed semantic segmentation maps using a multinomial diffusion model with multi-layer cross-attention conditioning, as illustrated in Figure~\ref{fig:diffusion_architecture}.
+The next step is to generate a static 3D scene from the bouding boxes predicted by the MLLM.
 
-\begin{figure}[htbp]
-    \centering
-    \begin{tikzpicture}[
-        node distance=1.5cm,
-        box/.style={rectangle, draw, minimum width=2cm, minimum height=0.8cm, text centered},
-        smallbox/.style={rectangle, draw, minimum width=1.5cm, minimum height=0.6cm, text centered, font=\small},
-        encoder/.style={box, fill=blue!20},
-        decoder/.style={box, fill=green!20},
-        conditioning/.style={box, fill=orange!20},
-        attention/.style={box, fill=red!20},
-        arrow/.style={->,>=stealth,thick}
-    ]
+\paragraph{1. Preparation of Conditional Inputs}
+Given the predicted bounding box layout predicted by the MLLM, we build a coarse instance-wise semantic segmentation map. We additionally define a \textit{spatial prior mask} encoding object classes (traffic light, car, etc.) as a 2D array. Both the instance layout and the room mask are embedded via trainable embedding layers, yielding conditioning vectors that guide the subsequent diffusion process. The desired room type, if applicable, is also embedded and added to the timestep embedding.
 
-    % Input Stage
-    \node[box] (mllm) at (0,8) {MLLM\\Predictions};
-    \node[box] (bbox) at (3,8) {Bounding\\Boxes};
-    \node[conditioning] (instance) at (0,6.5) {Instance\\Layout};
-    \node[conditioning] (spatial) at (3,6.5) {Spatial Prior\\Mask};
-    
-    % Embedding Stage
-    \node[smallbox] (embed1) at (0,5) {Embedding\\(60,64)};
-    \node[smallbox] (embed2) at (3,5) {CNN Encoder\\(60→64)};
-    
-    % Main U-Net Architecture
-    \node[encoder] (enc1) at (-2,3) {Encoder\\64→128};
-    \node[encoder] (enc2) at (-2,1.5) {Encoder\\128→256};
-    \node[encoder] (enc3) at (-2,0) {Encoder\\256→512};
-    
-    \node[box] (bottleneck) at (-2,-1.5) {Bottleneck\\512};
-    
-    \node[decoder] (dec1) at (2,0) {Decoder\\512→256};
-    \node[decoder] (dec2) at (2,1.5) {Decoder\\256→128};
-    \node[decoder] (dec3) at (2,3) {Decoder\\128→64};
-    
-    % Cross-Attention Blocks
-    \node[attention] (ca1) at (4.5,0) {Cross\\Attention};
-    \node[attention] (ca2) at (4.5,1.5) {Cross\\Attention};
-    \node[attention] (ca3) at (4.5,3) {Cross\\Attention};
-    
-    % Time Embedding
-    \node[conditioning] (time) at (6,5) {Time\\Embedding};
-    \node[smallbox] (sinusoid) at (6,3.5) {Sinusoidal\\+ MLP};
-    
-    % Output
-    \node[box] (output) at (2,4.5) {Final Conv\\64→60};
-    \node[box] (result) at (2,6) {Semantic\\Layout};
-    
-    % Skip Connections (dashed lines)
-    \draw[dashed, gray] (enc3) -- (dec1);
-    \draw[dashed, gray] (enc2) -- (dec2);
-    \draw[dashed, gray] (enc1) -- (dec3);
-    
-    % Main Flow Arrows
-    \draw[arrow] (mllm) -- (bbox);
-    \draw[arrow] (bbox) -- (instance);
-    \draw[arrow] (bbox) -- (spatial);
-    \draw[arrow] (instance) -- (embed1);
-    \draw[arrow] (spatial) -- (embed2);
-    
-    \draw[arrow] (embed1) -- (enc1);
-    \draw[arrow] (enc1) -- (enc2);
-    \draw[arrow] (enc2) -- (enc3);
-    \draw[arrow] (enc3) -- (bottleneck);
-    \draw[arrow] (bottleneck) -- (dec1);
-    \draw[arrow] (dec1) -- (dec2);
-    \draw[arrow] (dec2) -- (dec3);
-    \draw[arrow] (dec3) -- (output);
-    \draw[arrow] (output) -- (result);
-    
-    % Cross-Attention Connections
-    \draw[arrow, red] (embed2) -- (ca1);
-    \draw[arrow, red] (embed2) -- (ca2);
-    \draw[arrow, red] (embed2) -- (ca3);
-    \draw[arrow, red] (ca1) -- (dec1);
-    \draw[arrow, red] (ca2) -- (dec2);
-    \draw[arrow, red] (ca3) -- (dec3);
-    
-    % Time Embedding Connections
-    \draw[arrow] (time) -- (sinusoid);
-    \draw[arrow, orange] (sinusoid) -- (enc1);
-    \draw[arrow, orange] (sinusoid) -- (enc2);
-    \draw[arrow, orange] (sinusoid) -- (enc3);
-    \draw[arrow, orange] (sinusoid) -- (bottleneck);
-    \draw[arrow, orange] (sinusoid) -- (dec1);
-    \draw[arrow, orange] (sinusoid) -- (dec2);
-    \draw[arrow, orange] (sinusoid) -- (dec3);
-    
-    % Noise Process (side annotation)
-    \node[box, fill=yellow!20] (noise) at (8,1) {Multinomial\\Diffusion\\$t = 0...T$};
-    \draw[arrow, dashed] (noise) -- (sinusoid);
-    
-    % Legend
-    \node[encoder, font=\footnotesize] at (8,8) {Encoder};
-    \node[decoder, font=\footnotesize] at (8,7.5) {Decoder};
-    \node[conditioning, font=\footnotesize] at (8,7) {Conditioning};
-    \node[attention, font=\footnotesize] at (8,6.5) {Cross-Attention};
-    
-    \end{tikzpicture}
-    \caption{Complete architecture for multinomial diffusion-based static scene generation. The pipeline consists of: (1) MLLM predictions converted to spatial conditioning masks, (2) Multi-layer cross-attention conditioning (red arrows) integrated at every decoder layer, (3) U-Net backbone with skip connections (dashed gray), and (4) Time embedding injection (orange arrows) throughout the network.}
-    \label{fig:diffusion_architecture}
-\end{figure}
+\paragraph{2. Multinomial Diffusion for Layout Synthesis}
+The core of our system is a multinomial (discrete) diffusion model adapted for semantic segmentation. At each denoising timestep $t$, a UNet backbone receives:
+\begin{itemize}
+    \item the current noisy semantic map (as a categorical one-hot tensor),
+    %\item concatenated instance layout and mask embeddings,
+    \item a sinusoidal positional embedding of the diffusion timestep.
+\end{itemize}
 
-\paragraph{1. Conditional Input Preparation}
-Given the MLLM-predicted bounding box layout, we construct two key conditioning inputs: a \textit{coarse instance layout} providing spatial structure guidance, and a \textit{spatial prior mask} encoding object class locations as multi-channel binary masks $(B, 60, H, W)$. The instance layout is embedded via \texttt{nn.Embedding(60, 64)}, while the spatial prior is processed through a CNN encoder: \texttt{Conv2d(60→64) → GroupNorm → Mish → Conv2d(64→64)}.
+The UNet predicts logits for categorical class distributions per pixel. During training, we minimize the variational bound (KL divergence) between the true and predicted posteriors as in \cite{hoogeboom2021argmax}. During inference, the layout and mask embeddings provide strong spatial and semantic control, ensuring the generated layout adheres to both the LLM-predicted spatial arrangement and architectural constraints.
 
-\paragraph{2. Multi-Layer Cross-Attention Conditioning}
-Our core architectural innovation replaces traditional single-point conditioning with cross-attention blocks integrated at every decoder layer. Each cross-attention block computes:
-\begin{align}
-Q &= \text{Linear}(\text{features}) \\
-K, V &= \text{Linear}(\text{conditioning}) \\
-\text{Attention} &= \text{Softmax}(QK^T/\sqrt{d}) \\
-\text{Output} &= \text{Features} + \text{Attention}(V)
-\end{align}
-This mechanism maintains strong conditioning signals throughout the network depth, preventing signal dilution observed in single-injection approaches.
+\paragraph{3. Output}
+The final output is a top-down semantic map representing the static elements of the 3D scene to be generated. This map can then be used with score distillation sampling (as shown in Urban Architect~\cite{lu2024urban}) to create the full 3D scene.
 
-\paragraph{3. Multinomial Diffusion Process}
-The forward diffusion process follows:
-\begin{equation}
-q(x_t | x_0) = \text{Cat}(x_t | \bar{\alpha}_t \cdot x_0 + (1 - \bar{\alpha}_t)/K \cdot \mathbf{1}_K)
-\end{equation}
-where $\bar{\alpha}_t$ follows a cosine schedule and $K=60$ semantic classes. The reverse process predicts clean data directly ($x_0$-parameterization):
-\begin{align}
-p_\theta(x_{t-1} | x_t, c) &= \text{Cat}(x_{t-1} | \theta_{\text{post}}(x_t, \hat{x}_0, c)) \\
-\hat{x}_0 &= \text{Softmax}(\text{UNet}_\theta(x_t, t, c))
-\end{align}
-The training objective minimizes the variational bound:
-\begin{equation}
-\mathcal{L} = \mathbb{E}_{x,t,c}[\text{KL}(q(x_{t-1}|x_t,x_0) \| p_\theta(x_{t-1}|x_t,c))]
-\end{equation}
+\begin{tikzpicture}[thick, every node/.style={font=\small}]
+% Define styles
+\tikzset{
+  block/.style={rectangle, rounded corners, minimum width=1.8cm, minimum height=0.8cm, text centered, draw=black, fill=blue!12},
+  cond/.style={rectangle, rounded corners, minimum width=1cm, minimum height=0.6cm, text centered, draw=black, fill=orange!15},
+  op/.style={circle, draw=black, fill=gray!8, minimum size=6mm, inner sep=0pt},
+  arr/.style={-Stealth, thick}
+}
 
-\paragraph{4. Architecture Specifications}
-The U-Net backbone employs 4 encoder levels with channel dimensions $[64, 128, 256, 512]$ and symmetric decoder with skip connections. Cross-attention conditioning is integrated at each of the 7 decoder layers with 8 attention heads per block. Dropout (0.1) is applied after the first ResNet block at each level. The final $1 \times 1$ convolution outputs logits for all 60 semantic classes.
+% Main flow, left to right (horizontal)
+\node [block] (boxes) {Boxes Layout};
+\node [block, right=0.6cm of boxes] (semmap) {Init\\Map};
+\node [op, right=0.4cm of semmap] (plus) {$\oplus$};
+\node [block, right=0.6cm of plus] (embed) {Embeddings};
+\node [block, right=0.6cm of embed] (unet) {UNet};
+\node [block, right=0.6cm of unet] (out) {Semantic\\Map};
 
-\paragraph{5. Training Data Requirements}
-Based on recent advances in few-shot diffusion models, we establish minimum training requirements: \textbf{Practical minimum}: 500-1000 samples total with class-balanced distribution (15-20 samples for major classes, 5-10 for rare classes), achieving 65-75\% pixel accuracy. \textbf{Optimal performance}: 2000-5000 samples achieving 80-90\% accuracy. Training employs curriculum learning, semantic embedding initialization, and class-balanced sampling to maximize performance in low-data regimes.
+% Conditioning nodes above and below
+\node [cond, below=0.55cm of embed] (time) {Timestep $t$};
+
+% Main arrows
+\draw[arr] (boxes) -- (semmap);
+\draw[arr] (semmap) -- (plus);
+\draw[arr] (plus) -- (embed);
+\draw[arr] (embed) -- (unet);
+\draw[arr] (unet) -- (out);
+
+% Conditioning arrows
+\draw[arr] (time) -- (embed);
+
+% Label under output
+\node [below=0.1cm of out] {\footnotesize Top-down categorical layout};
+
+\end{tikzpicture}
 
 
 \subsection{Tasks}

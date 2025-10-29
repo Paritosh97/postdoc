@@ -12,6 +12,7 @@
 \date{September 2025}
 
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{tikz}
@@ -190,7 +191,7 @@ Table \ref{tab:validation} lists common qualitative and quantitative validation 
 \cline{2-4}
 & Criticality and Opportunity Metrics & Quantifies the frequency and severity of challenging situations (number of safe gaps, minimum feasible gap size, “no-go” cases). & Evaluates risk/challenge spectrum in the scenario catalog. \\
 \cline{2-4}
-& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID/KID between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \\
+& Sim2Real Gap (Domain Distance) & Computes metrics like KL-divergence, Earth Mover's Distance, t-SNE or FID/KID/CKL between generated and real scenario feature distributions. & Evaluates how closely synthetic scenarios match reality. \\
 \cline{2-4}
 & Controllability Metrics & Measures how well the model can generate scenarios based on prompts (CLIP, BLIP, VQA, etc.) & Assesses controllability and flexibility of the generative model. \\
 \hline
@@ -566,7 +567,7 @@ The U-Net produces:
 \begin{itemize}
   \item \textbf{Per-pixel logits:} $\mathrm{logits}\in\mathbb{R}^{B\times K\times H\times W}$ representing categorical distributions for denoising;
   \item \textbf{Auxiliary trajectory predictions:}
-  $\widehat{\mathbf{T}}_{\text{refined}}\in\mathbb{R}^{B\times N_{\text{dyn}}\times M\times 2}$, predicted via a shared MLP (\texttt{traj\_pred\_mlp}).
+  $\widehat{\mathbf{T}}_{\text{refined}}\in\mathbb{R}^{B\times N_{\text{dyn}}\times M\times 2}$, predicted via a shared MLP.
 \end{itemize}
 
 \begin{figure}[t]
@@ -737,8 +738,595 @@ It exposes four primary \texttt{POST} endpoints:
 
 \subsection{Frontend (Unity) Implementation}
 
-The frontend is developed as a part of existing GUsT-3D add-on. It communicates with the Python backend via HTTP, sending requests to the defined endpoints and parsing the responses to generate the scenarios within Unity. 
+The frontend is developed as a part of existing GUsT-3D add-on. It communicates with the Python backend via HTTP, sending requests to the defined endpoints and parsing the responses to generate the scenarios within Unity.
 
+
+\section{Experiments}
+\label{sec:experiments}
+
+This section presents a log of all experiments conducted to train the \textit{multinomial diffusion model}. Detailed parameters of the experiments are available in \emph{attachments/runs.csv} for reference. Table~\ref{tab:validation_results} visualises the validation results for each experiment, whereas Table~\ref{tab:llm_results} visualises the LLM conditioning results for each experiment. Figure~\ref{fig:legend} shows the legend of the generated maps.
+
+\subsection{Experiment 1: \texttt{notebook\_test}}
+
+\textbf{Goal:} Train the model based on the degraded semantic maps extracted from the KITTI-360 layouts.
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item Latent Dimension: 32
+    \item Timesteps: 100
+    \item Epochs: 100
+    \item Number of maps: 100
+\end{itemize}
+
+
+\textbf{Results:}
+\begin{itemize}
+    \item The losses oscillated significantly due to a high learning rate as shown in Figure~\ref{fig:loss_curves_ep1}.
+    \item Training failed.
+\end{itemize}
+
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=8cm,
+    xlabel={Epoch},
+    ylabel={Bits/dim},
+    title={Training vs Evaluation Bits/dim},
+    legend pos=north east,
+    grid=both,
+    major grid style={line width=0.2pt,draw=gray!50},
+    minor grid style={line width=0.1pt,draw=gray!20},
+]
+
+% Training curve
+\addplot[
+    color=blue,
+    mark=o,
+    thick,
+] coordinates {
+  (1, 3.81698)
+  (2, 2.31937)
+  (3, 1.66945)
+  (4, 1.39065)
+  (5, 1.2297)
+  (6, 1.05613)
+  (7, 1.62261)
+  (8, nan)
+  (9, nan)
+  (10, nan)
+  (11, nan)
+  (12, nan)
+  (13, nan)
+  (14, nan)
+  (15, nan)
+  (16, nan)
+};
+\addlegendentry{Train}
+
+% Evaluation curve
+\addplot[
+    color=red,
+    mark=square,
+    thick,
+] coordinates {
+  (1, 2.99358)
+  (2, 2.06491)
+  (3, 1.53996)
+  (4, 1.20063)
+  (5, 1.07013)
+  (6, 0.98127)
+  (7, 5.83726)
+  (8, nan)
+  (9, nan)
+  (10, nan)
+  (11, nan)
+  (12, nan)
+  (13, nan)
+  (14, nan)
+  (15, nan)
+  (16, nan)
+};
+\addlegendentry{Eval}
+\end{axis}
+\end{tikzpicture}
+\caption{Loss curves for Experiment 1}
+\label{fig:loss_curves_ep1}
+\end{figure}
+
+
+\subsection{Experiment 2: \texttt{notebook\_test\_stable}}
+
+\textbf{Goal:} Based on the previous results. The goal of this run was to stabilise the training as well as check the training and inference for the trajectory generation code.
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item Class weights: added based for trajectories based on the frequency of dynamic classes.
+    \item Latent Dimension: 64
+    \item Timesteps: 1000
+    \item Number of maps: 15000 
+    \item File stride: 5 
+    \item Epochs: 50
+\end{itemize}
+
+
+\textbf{Changes Made:}
+\begin{itemize}
+    \item Decreased learning rate by a factor of 10 for more stable convergence.
+    \item Added input augmentations (rotations and flips) to improve dataset variability.
+    \item Increased diffusion embedding dimension from 32 to 64 to mitigate class swapping.
+    \item Increased diffusion timesteps from 100 to 1000 (improving quality at the cost of training/inference time).
+    \item Implemented the following enhancements:
+    \begin{itemize}
+        \item \textbf{Trajectory logic:} Introduced to handle dynamic elements.
+        \item \textbf{Class weights:} Applied to dynamic classes to handle class imbalance.
+        \item \textbf{File stride:} Sampling every $n$th file to increase variability.
+        \item \textbf{Frame skip:} Similar to stride, but applied to trajectory sequences.
+        \item \textbf{Sequence length:} Defined the number of frames per trajectory.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Results:}
+\begin{itemize}
+    \item The training became significantly more stable compared to the previous run. The lower validation loss compared to the training loss could be due to a smaller number of epochs. Additionally, the validation loss is measured after each training epoch.  Figure~\ref{fig:loss_curves_ep2} shows the loss curves for each epoch.
+    \item The static generation generates artefacts (such as the dynamic components) as shown in tables~\ref{tab:validation_results} and~\ref{tab:llm_results}.
+    \item The trajectory tensors had much lower values and didn't conform to the spatial mask.
+\end{itemize}
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=8cm,
+    xlabel={Epoch},
+    ylabel={Bits/dim},
+    title={Training vs Evaluation Bits/dim},
+    legend pos=north east,
+    grid=both,
+    major grid style={line width=0.2pt,draw=gray!50},
+    minor grid style={line width=0.1pt,draw=gray!20},
+]
+
+% Training curve
+\addplot[
+    color=blue,
+    mark=o,
+    thick,
+] coordinates {
+(1,1.942)
+(2,0.655)
+(3,0.486)
+(4,0.440)
+(5,0.413)
+(6,0.384)
+(7,0.377)
+(8,0.371)
+(9,0.356)
+(10,0.347)
+(11,0.339)
+(12,0.329)
+(13,0.318)
+(14,0.320)
+(15,0.316)
+(16,0.308)
+(17,0.306)
+(18,0.301)
+(19,0.301)
+(20,0.300)
+(21,0.295)
+(22,0.293)
+(23,0.290)
+(24,0.286)
+(25,0.287)
+(26,0.284)
+(27,0.283)
+(28,0.281)
+(29,0.282)
+(30,0.278)
+(31,0.276)
+(32,0.275)
+(33,0.277)
+(34,0.272)
+(35,0.272)
+(36,0.273)
+(37,0.268)
+(38,0.268)
+(39,0.269)
+(40,0.266)
+(41,0.265)
+(42,0.260)
+(43,0.263)
+(44,0.265)
+(45,0.261)
+(46,0.260)
+(47,0.261)
+(48,0.261)
+(49,0.257)
+(50,0.256)
+};
+\addlegendentry{Train}
+
+% Evaluation curve
+\addplot[
+    color=red,
+    mark=square,
+    thick,
+] coordinates {
+(5,0.404)
+(10,0.340)
+(15,0.310)
+(20,0.289)
+(25,0.285)
+(30,0.274)
+(35,0.268)
+(40,0.264)
+(45,0.255)
+(50,0.248)
+};
+\addlegendentry{Eval}
+\end{axis}
+\end{tikzpicture}
+\caption{Loss curves for Experiment 2}
+\label{fig:loss_curves_ep2}
+\end{figure}
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/trajectory_results_val_exp2.png}
+%     \captionof{figure}{Trajectory results on validation samples. Left: KITTI-360 ground truth. Middle: Diffusion model output. Right: LLM-generated map used as conditioning.}
+%     \label{fig:trajectory_results_val_exp2}
+% \end{figure}
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/trajectory_results_llm_exp2.png}
+%     \captionof{figure}{Trajectory results on LLM-generated samples.}
+%     \label{fig:trajectory_results_llm_exp2}
+% \end{figure}
+
+
+\subsection{Experiment 3: \texttt{run\_20251023\_020445}}
+
+\textbf{Goal:} Conduct a complete static layout generation run after incorporating insights from prior experiments and discussions.
+
+\textbf{Changes Made:}
+\begin{itemize}
+    \item Ignored class weights and trajectory-related computations to focus solely on static layout generation.
+    \item Replaced bounding-box extraction with a grid-based approach to convert exact shape masks into bounding boxes. This approach aligns better with the blocky, large-object nature of LLM-generated outputs.
+\end{itemize}
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item Class weights: added based for trajectories based on the frequency of dynamic classes.
+    \item Latent Dimension: 64
+    \item Timesteps: 1000
+    \item Number of maps: 7500 
+    \item File stride: 10
+    \item Epochs: 25
+\end{itemize}
+
+
+\textbf{Results:}
+\begin{enumerate}
+    \item Final training and validation loss of 0.25 and 0.24. The training and validation loss curves are shown in Figure~\ref{fig:loss_curves_ep4}.
+
+    \item The model does regenerate the main structures in the images, but it also introduces dynamic objects, such as cars, into the static map. Figure~\ref{fig:legend} shows the legend of the generated maps. In future, A better approach could be to mask out these dynamic objects completely from the training data for static inference.
+\end{enumerate}
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=8cm,
+    xlabel={Epoch},
+    ylabel={Bits/dim},
+    title={Training vs Evaluation Bits/dim},
+    legend pos=north east,
+    grid=both,
+    major grid style={line width=0.2pt,draw=gray!50},
+    minor grid style={line width=0.1pt,draw=gray!20},
+]
+
+% Training curve
+\addplot[
+    color=blue,
+    mark=o,
+    thick,
+] coordinates {
+(1,2.3510)
+(2,0.7959)
+(3,0.4901)
+(4,0.4068)
+(5,0.3702)
+(6,0.3454)
+(7,0.3288)
+(8,0.3173)
+(9,0.3053)
+(10,0.2969)
+(11,0.2914)
+(12,0.2846)
+(13,0.2800)
+(14,0.2746)
+(15,0.2710)
+(16,0.2666)
+(17,0.2643)
+(18,0.2594)
+(19,0.2575)
+(20,0.2555)
+(21,0.2533)
+(22,0.2519)
+(23,0.2504)
+(24,0.2458)
+(25,0.2446)
+};
+\addlegendentry{Train}
+
+% Evaluation curve
+\addplot[
+    color=red,
+    mark=square,
+    thick,
+] coordinates {
+(4,0.3462)
+(9,0.28919)
+(14,0.26535)
+(19,0.24751)
+};
+\addlegendentry{Eval}
+\end{axis}
+\end{tikzpicture}
+\caption{Loss curves for Experiment 3}
+\label{fig:loss_curves_exp3}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/legend.png}
+    \captionof{figure}{Legend for generated maps.}
+    \label{fig:legend}
+\end{figure}
+
+
+\subsection{Experiment 4: \texttt{run\_20251025\_031240}}
+
+\textbf{Goal:} Conduct a complete static layout generation run after incorporating insights from prior experiments and discussions.
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item Class weights: added based for trajectories based on the frequency of dynamic classes.
+    \item Latent Dimension: 64
+    \item Timesteps: 1000
+    \item Number of maps: 5000 
+    \item File stride: 14
+    \item Epochs: 50
+\end{itemize}
+
+\textbf{Changes Made:}
+\begin{itemize}
+    \item Ignored class weights and trajectory-related computations to focus solely on static layout generation.
+    \item Replaced bounding-box extraction with a grid-based approach to convert exact shape masks into bounding boxes. This approach aligns better with the blocky, large-object nature of LLM-generated outputs.
+\end{itemize}
+
+
+\textbf{Results:}
+\begin{enumerate}
+    \item Final training and validation loss of 0.157 and 0.224. An additional test loss of 0.229803 was calculated on the test dataset after the training The training and validation loss curves are shown in Figure~\ref{fig:loss_curves_ep4}. The much-lower training loss in this run suggests that the model overfitted to the training data compared to previous which is also reflected by the increase in validation loss in last 10 epochs.
+
+    \item The model does not introduce dynamic objects, and also infills static objects for certain maps. However, some artefacts are still present in the generated maps as shown in tables~\ref{tab:validation_results} and~\ref{tab:llm_results}.
+\end{enumerate}
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=8cm,
+    xlabel={Epoch},
+    ylabel={Bits/dim},
+    title={Training vs Evaluation Bits/dim},
+    legend pos=north east,
+    grid=both,
+    major grid style={line width=0.2pt,draw=gray!50},
+    minor grid style={line width=0.1pt,draw=gray!20},
+]
+
+% Training curve
+\addplot[
+    color=blue,
+    mark=o,
+    thick,
+] coordinates {
+(1,3.266052022116525 )
+(2,2.1576013405663628)
+(3,1.5719009031568254)
+(4,1.1108483610834394)
+(5,0.8262577911104475)
+(6,0.6413788035256522)
+(7,0.524440433365958 )
+(8,0.45429373802457534)
+(9,0.4082127619130271)
+(10,0.37728283963884623)
+(11,0.35537326564107624)
+(12,0.3304433267797743)
+(13,0.31359455631460464)
+(14,0.3008075200830187)
+(15,0.2905022528171539)
+(16,0.28004381128719874)
+(17,0.27268179556301664)
+(18,0.2640313944816589)
+(19,0.25760547358649116)
+(20,0.2514811924185072)
+(21,0.2475815166405269)
+(22,0.23972793780054366)
+(23,0.23745073865141186)
+(24,0.2313898389339447)
+(25,0.22757616998468128)
+(26,0.22290931400230954)
+(27,0.21951803415162222)
+(28,0.21580973981107984)
+(29,0.21199409898689814)
+(30,0.21082251518113274)
+(31,0.20724563092844828)
+(32,0.20156505715847015)
+(33,0.20100805059501103)
+(34,0.19720662110192436)
+(35,0.19440724221297673)
+(36,0.19261907357828958)
+(37,0.18792454389163427)
+(38,0.18714307463169097)
+(39,0.18626809465885164)
+(40,0.1813189321586064)
+(41,0.17906540957518988)
+(42,0.17472429156303407)
+(43,0.1723263396535601)
+(44,0.1698573808840343)
+(45,0.16727627163273948)
+(46,0.16689756722109658)
+(47,0.16381815944399153)
+(48,0.1610402065856116)
+(49,0.1591573236669813)
+(50,0.15715532231330873)
+};
+\addlegendentry{Train}
+
+% Evaluation curve
+\addplot[
+    color=red,
+    mark=square,
+    thick,
+] coordinates {
+(10,0.35908874416351316)
+(20,0.25402949523925783)
+(30,0.22512340140342713)
+(40,0.21949620628356933)
+(50,0.2240180037021637)
+};
+\addlegendentry{Eval}
+\end{axis}
+\end{tikzpicture}
+\caption{Loss curves for Experiment 4}
+\label{fig:loss_curves_ep4}
+\end{figure}
+
+
+\subsection{Experiment 5 (planned)}
+\textbf{Goal:} Despite lower training and val losses, the generalisation by the diffusion model, especially on LLM maps, still has problems. This is due to the discrepancy in the input of the diffusion and the output of the LLM. The LLM generates the map using a JSON structure that contains larger, continuous objects compared to the pixelated semantic maps, which serve as input conditioning for the diffusion model. The goal of this experiment is to adapt the LLM's output format to the diffusion model's input format to improve generalisation. For this, the VLM has to be finetuned to generate a detailed pixel-wise map inside the JSON structure itself. 
+
+\textbf{Changes to be Made:}
+\begin{itemize}
+    \item Switch the MLLM used from Gemini (closed-source) to Instruct-VL3 (open-source)
+    \item Create synthetic class-to-json pairs of a subset of semantic maps which will be used to finetune the model.
+    \item Use QLoRA~\cite{dettmers2023qlora} for finetuning.
+    \item For validation, 1000 generaeted samples will be compared using FID, KID, and CKL metrics to measure the distribution distance from the eval set (table~\ref{tab:validation}).
+\end{itemize}
+
+\textbf{Results:}
+\begin{enumerate}
+    \item 
+\end{enumerate}
+
+\begin{table}
+\centering
+\caption{Comparison of Validation Conditioning, Ground Truth, and Inferred Images}
+\begin{tabular}{c | c | c}
+%\toprule
+%\multicolumn{3}{c}{\textbf{Ground Truth}} \\
+%\midrule
+%\multicolumn{3}{c}{
+  %\includegraphics[width=0.25\linewidth]{images/val_gt1.png} \hspace{2pt}
+  %\includegraphics[width=0.25\linewidth]%{images/val_gt2.png} \hspace{2pt}
+ % \includegraphics[width=0.25\linewidth]{images/val_gt3.png}
+%} \\
+%\midrule
+\textbf{Exp. No.} & \textbf{Conditioning} & \textbf{Inferred Image} \\
+\midrule
+
+1 & \multicolumn{2}{c}{Training Unstable} \\
+\midrule
+
+2 &
+\includegraphics[width=0.15\linewidth]{images/val_conditioning1_exp2.png}
+\includegraphics[width=0.15\linewidth]{images/val_conditioning2_exp2.png}
+%\includegraphics[width=0.15\linewidth]{images/val_conditioning3_exp2.png}
+&
+\includegraphics[width=0.15\linewidth]{images/val_inferred1_exp2.png}
+\includegraphics[width=0.15\linewidth]{images/val_inferred2_exp2.png}
+%\includegraphics[width=0.15\linewidth]{images/val_inferred3_exp2.png}
+\\
+\midrule
+
+3 &
+\includegraphics[width=0.15\linewidth]{images/val_conditioning1_exp3.png}
+\includegraphics[width=0.15\linewidth]{images/val_conditioning2_exp3.png}
+%\includegraphics[width=0.15\linewidth]{images/val_conditioning3_exp3.png}
+&
+\includegraphics[width=0.15\linewidth]{images/val_inferred1_exp3.png}
+\includegraphics[width=0.15\linewidth]{images/val_inferred2_exp3.png}
+%\includegraphics[width=0.15\linewidth]{images/val_inferred3_exp3.png}
+\\
+\midrule
+
+4 &
+\includegraphics[width=0.15\linewidth]{images/val_conditioning1_exp4.png}
+\includegraphics[width=0.15\linewidth]{images/val_conditioning2_exp4.png}
+%\includegraphics[width=0.15\linewidth]{images/val_conditioning3_exp4.png} 
+&
+\includegraphics[width=0.15\linewidth]{images/val_inferred1_exp4.png}
+\includegraphics[width=0.15\linewidth]{images/val_inferred2_exp4.png}
+%\includegraphics[width=0.15\linewidth]{images/val_inferred3_exp4.png} 
+\\
+
+\bottomrule
+\end{tabular}
+\caption*{Top: Ground truth semantic maps used as conditioning input. Below: The conditionings and inferred outputs from the diffusion model across four experiments.}
+\label{tab:validation_results}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Comparison of LLM Conditioning and Inferred Images}
+\begin{tabular}{c | c}
+\toprule
+\multicolumn{2}{c}{\textbf{LLM Conditioning}} \\
+\midrule
+\multicolumn{2}{c}{
+  \includegraphics[width=0.25\linewidth]{images/llm_conditioning1.png} \hspace{2pt}
+  \includegraphics[width=0.25\linewidth]{images/llm_conditioning2.png} \hspace{2pt}
+  \includegraphics[width=0.25\linewidth]{images/llm_conditioning3.png}
+} \\
+\midrule
+\textbf{Exp. No.} & \textbf{Inferred Image} \\
+\midrule
+
+1 & \multicolumn{1}{c}{Training Unstable} \\
+\midrule
+
+2 &
+\includegraphics[width=0.15\linewidth]{images/llm_inferred1_exp2.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred2_exp2.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred3_exp2.png} \\
+\midrule
+
+3 &
+\includegraphics[width=0.15\linewidth]{images/llm_inferred1_exp3.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred2_exp3.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred3_exp3.png} \\
+\midrule
+
+4 &
+\includegraphics[width=0.15\linewidth]{images/llm_inferred1_exp4.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred2_exp4.png}
+\includegraphics[width=0.15\linewidth]{images/llm_inferred3_exp4.png} \\
+
+\bottomrule
+\end{tabular}
+\caption*{Top: LLM-generated semantic maps used as conditioning input. Below: Inferred outputs from the diffusion model across four experiments.}
+\label{tab:llm_results}
+\end{table}
+
+
+\clearpage
 \section*{Appendix}
 
 \section{Examples}
@@ -1370,6 +1958,24 @@ The frontend is developed as a part of existing GUsT-3D add-on. It communicates 
     \item \textbf{Validate with more prompts:} Validate the system with additional prompts - realistic, illogical, variations of the same prompts, prompts that recreate Florent's scenarios, decomposing prompts which are "difficult" for a pedestrian (jaywalking, parking lot entrance), etc.
 
     \item \textbf{Add in the doc:} the prompts discussed in the meeting, diffusion architecture, more details on validation, add examples for failure conditions, SOTA on prompt engineering for multimodal content.
+    
+\end{itemize}
+
+\subsubsection{21/10/2025}    
+
+\begin{itemize}
+
+    \item \textbf{Check frame rate:} Was 10 Hz (not mentioned anywhere, but they used the same 10Hz cameras as the original KITTI dataset)
+
+    \item \textbf{Log all runs:} Log all train/eval losses.
+
+    \item \textbf{Cross check validation:} Need to test the model performance based on the input bboxes. To know whether the model was over/underfitting.
+    
+    \item \textbf{Check performance on unseen:} Test model performance based on unseen input bboxes.
+    
+    \item \textbf{Last week runs:} Send logs of last week's runs.
+            
+    \item \textbf{Adapt input:} Make Diffusion input more similar to the MLLM output or vice-versa OR fine-tune the Diffusion model.
     
 \end{itemize}
 

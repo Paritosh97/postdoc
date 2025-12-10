@@ -511,7 +511,7 @@ For simplicity and reducing the token size, only the static layout is considered
     \item Alpha of LoRA: 32
     \item Learning Rate: $5\times10^{-6}$ (adaptive)
     \item Batch Size: 1 per GPU (4 GPUs used)
-    \item Number of Steps/Epochs: 450/2
+    \item Number of Steps/Epochs: 2
     \item Modules of the transformer finetuned: ["q\_proj", "k\_proj", "v\_proj", "o\_proj", "gate\_proj", "up\_proj", "down\_proj"]
 \end{enumerate}
 
@@ -545,7 +545,7 @@ For simplicity and reducing the token size, only the static layout is considered
     \item Alpha of LoRA: 32
     \item Learning Rate: $5\times10^{-6}$ (adaptive)
     \item Batch Size: 1 per GPU (4 GPUs used)
-    \item Number of Steps/Epochs: 450/2
+    \item Number of Steps/Epochs: 2
     \item Modules of the transformer finetuned: ["q\_proj", "k\_proj", "v\_proj", "o\_proj", "gate\_proj", "up\_proj", "down\_proj"]
 \end{enumerate}
 
@@ -567,14 +567,14 @@ The previous experiments degraded the generation performance of the model compar
     \item Alpha of LoRA: 32
     \item Learning Rate: $5\times10^{-6}$ (adaptive)
     \item Batch Size: 1 per GPU (4 GPUs used)
-    \item Number of Steps/Epochs: 450/2
+    \item Number of Steps/Epochs: 2
     \item Modules of the transformer finetuned: ["q\_proj", "k\_proj", "v\_proj", "o\_proj", "gate\_proj", "up\_proj", "down\_proj"]
 \end{enumerate}
 
 
 \textbf{Results:}
 \begin{enumerate}
-    \item Final train/eval loss of the LLM: 0.6445
+    \item Final train loss of the LLM: 0.6066
     \item The generation performance of the model still drops compared to the pretrained model.
     \item The drop in performance is less compared to previous experiments.
 \end{enumerate}
@@ -582,6 +582,76 @@ The previous experiments degraded the generation performance of the model compar
 
 
 \subsection{Experiment 4}
+Since the model's performance improved in the previous experiment, this experiment is a continuation of the previous one, but with a higher epoch count.
+
+
+\textbf{Parameters:}
+\begin{enumerate}
+    \item Quantization: 4 bit
+    \item Rank of LoRA: 16
+    \item Alpha of LoRA: 32
+    \item Learning Rate: $5\times10^{-6}$ (adaptive)
+    \item Batch Size: 1 per GPU (4 GPUs used)
+    \item Number of Steps/Epochs: 7
+    \item Modules of the transformer finetuned: ["q\_proj", "k\_proj", "v\_proj", "o\_proj", "gate\_proj", "up\_proj", "down\_proj"]
+\end{enumerate}
+
+
+\textbf{Results:}
+\begin{enumerate}
+    \item Final train/eval loss of the LLM: 0.5486/0.5529. Loss curves shown in figure~\ref{fig:loss_curves_finetune_ep4}
+    \item The model generalises better than the baseline qualitatively.
+    \item Quantitatively, the CKL is still higher due to incomplete JSONs. The FID and KID are lower.
+\end{enumerate}
+
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    width=12cm,
+    height=8cm,
+    xlabel={Epoch},
+    ylabel={Bits/dim},
+    title={Training vs Evaluation},
+    legend pos=north east,
+    grid=both,
+    major grid style={line width=0.2pt,draw=gray!50},
+    minor grid style={line width=0.1pt,draw=gray!20},
+]
+
+% Training curve
+\addplot[
+    color=blue,
+    mark=o,
+    thick,
+] coordinates {
+  (1, 1.0369)
+  (2, 0.98737)
+  (3, 0.8054)
+  (4, 0.778)
+  (5, 0.6213)
+  (6, 0.5361)
+  (7, 0.5486)
+};
+\addlegendentry{Train}
+
+% Evaluation curve
+\addplot[
+    color=red,
+    mark=square,
+    thick,
+] coordinates {
+  (1, 0.9915)
+  (3, 0.7885)
+  (5, 0.6109)
+  (7, 0.5529)
+};
+\addlegendentry{Eval}
+\end{axis}
+\end{tikzpicture}
+\caption{Loss curves for Experiment 4}
+\label{fig:loss_curves_finetune_ep4}
+\end{figure}
 
 
 \section{Evaluation}

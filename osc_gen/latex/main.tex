@@ -1,0 +1,558 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{appendix}
+\usepackage{url}
+\usepackage{amssymb}    % for \checkmark
+\usepackage{booktabs}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{calc}
+
+
+\title{Scenario Generation for Interactive Urban Environments}
+\author{Paritosh Sharma, Hui-Yin Wu}
+\date{February 2026}
+
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{lscape}
+\usepackage{geometry}
+\usepackage{adjustbox}
+
+\usetikzlibrary{shadows,arrows.meta,positioning,fit}
+
+\tikzset{
+  module/.style={rectangle, rounded corners=6pt, draw=orange!80!black, very thick, fill=black!90,
+                 text=white, align=left, font=\bfseries, minimum width=3.5cm, minimum height=2cm},
+  subtext/.style={font=\scriptsize\color{white}, align=left},
+  arrow/.style={-{Latex[length=3mm]}, thick, orange!80!black},
+}
+
+\tcbuselibrary{listings, breakable}
+
+% Define a style for examples
+\tcbset{
+  examplebox/.style={
+    colback=blue!3!white,
+    colframe=blue!60!black,
+    coltitle=black,
+    fonttitle=\bfseries,
+    sharp corners,
+    boxrule=0.6pt,
+    breakable,
+    enhanced,
+    left=5pt, right=5pt, top=5pt, bottom=5pt
+  }
+}
+
+\begin{document}
+
+\maketitle
+
+\section*{Project members}
+
+\begin{itemize}
+    \item Scientific team: Paritosh Sharma, Hui-Yin Wu
+\end{itemize}
+
+\section{Context and objectives}
+
+The document highlights the work plan for the the WP4 of the ANR Creative 3D~\footnote{\url{https://project.inria.fr/creattive3d/}} project. The expected outcome of this project is to create a generative model that is capable of creating personalized training scenarios in urban environments.
+
+\section{Introduction}
+
+Virtual Reality (VR) and Augmented Reality (AR) technologies have advanced significantly in recent years, enabling the creation of immersive and interactive environments for various applications. These can be further used to provide personalized training and rehabilitation scenarios. In the context of low vision rehabilitation, these models can be particularly useful to study pedestrian behaviours under normal and simulated vision. However, most simulated environments suffer from perceptual gaps between the designer, the user, and the system. The existing GUsT-3D framework~\cite{wu2022designing}, developed during the Creative3D project, provides a foundation to address this. However, the current framework is still limited by its reliance on a fixed set of urban environments and interactions innhibiting its ability to scale.
+
+In parallel, recent works on 3D generative models for urban scenario generation has shown promising results in generating diverse and realistic urban environments. Additionally, these models have been able to capture the diverse nature and the complexities of an urban setting, including the interactions between pedestrians, vehicles, and the environment. Driven by these extraordinary capabilities, exploring the potential of generative models will enable us to create more diverse and realistic urban scenarios.
+
+\section{Related Work}
+\label{sota}
+
+In this section, we first review prior work on pedestrian-in-the-loop simulation. 
+We then survey recent generative approaches for urban scenario generation, covering symbolic, layout-guided, and neural rendering–based methods, as well as diffusion-based models for dynamic scene synthesis. 
+Finally, we discuss common validation protocols used to evaluate the performance of these models.
+
+
+\subsection{Pedestrian-in-the-Loop}
+\label{sota:ped_in_loop}
+
+VR Simulations have been widely used to study pedestrian behavior and interactions in urban scenarios~\cite{wu2018using,tran2021review,mukoya2024jaywalkervr,schneider2020virtually}. This human-in-the-loop approach (also referred as pedestrian-in-the-loop\cite{hartmann2017pedestrian}) allows researchers to collect data on how pedestrians interact with their environment, including their decision-making processes, movement patterns, and responses to various stimuli. These simulations can be used to study a wide range of scenarios, from simple road crossings to complex urban environments with multiple interacting agents. More recently, JaywalkerVR~\cite{mukoya2024jaywalkervr}, a VR human-in-the-loop simulator, used CARLA~\cite{dosovitskiy2017carla} to create four different scenarios: jaywalking, parked cars, four-way stops, and parking lot entrances. Despite the obvious advantages, developing such simulators is still challenging because of the perceptual gaps between the designer, the user and the system as identified by Dourish~\cite{dourish2001action}.
+
+The GUsT-3D framework~\cite{wu2022designing} addresses this by first defining the scene using a scenegraph, which captures the relationships between different elements in the scenario (ontology) and then defining the task to be carried out during the course of the scenario using a GUTasks (intersubjectivity). Lastly, it uses a query component for logging and post-scenario analysis of the experience (intentionality). This framework was also applied by creating a dataset of 6 road-crossing scenarios to study pedestrian behavior under normal and low vision~\cite{wu2023exploring}. Even though GusT-3D framework addresses the perceptual gaps which were identified by Dourish, it still relies on a fixed set of scenarios and interactions.
+
+\subsection{Scenario Generation}
+\label{sota:procedural}
+
+\subsubsection{Structured Scenario Generation}
+\label{sota:generative_models:structured}
+
+Structured scenario generation refers to methods that produce scenarios in formal, machine-readable representations suitable for execution in simulators and systematic evaluation.
+
+The most widely used formats in autonomous driving research include:
+
+\begin{itemize}
+    \item \textbf{Scenic}~\cite{fremont2019scenic}: a probabilistic domain-specific language for defining constraints, distributions, and relationships among agents. Scenarios specified in Scenic can be sampled into concrete instances.
+    
+    \item \textbf{OpenSCENARIO DSL}~\cite{ASAMOpenSCENARIODSL}:  an open standard for describing the dynamic content of scenarios used in driving and traffic simulators.
+    
+    \item \textbf{GeoScenario DSL}~\cite{8814107}: similar to OpenSCENARIO, but provides concrete, executable scenario specifications with explicit positions, trajectories, and temporal details, making scenarios directly runnable and reusable across different simulation platforms.
+    
+    \item \textbf{ScenarioNet}~\cite{li2023scenarionet}: built on real-world data for structured, executable traffic scenarios.
+\end{itemize}
+
+\subsubsection{Prompt-based Procedural Specification}
+\label{sota:generative_models:prompts}
+
+Prompts are textual cues provided to the generative model to guide the scenario creation process. Since the popularity of LLMs like GPT~\cite{achiam2023gpt}, prompts have become a common way to interact with generative models. They can be used to specify the desired characteristics of the scenario, such as the type of environment, objects, and their relationships. Table~\ref{tab:prompt_based_models} lists some of the recent prompt-based models for scenario generation.
+
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Technique} & \textbf{Output} \\ \hline
+    ScenicNL~\cite{elmaaroufi2024scenicnl} & Converts LLM Prompts to Scenic Constraints & Scenic Scenario \\ \hline
+    ChatScene~\cite{zhang2024chatscene} & Conversational Agent for Scenario Definition using Scenic & Scenic Scenario \\ \hline
+    LayoutGPT~\cite{feng2023layoutgpt} & Prompts converted to CSS-like Layout Formatting by LLMs & Layout Representation \\ \hline
+    ChatDyn~\cite{wei2024chatdyn} & LLM-based planning and low-level trajectory generation for Pedestrian and Vehicle & 3D Scenario \\ \hline
+    Work by Feng et al.~\cite{feng2025text} & JSON to describe layout and 3D models & 3D Scene \\ \hline
+    TTSG~\cite{ruan2024traffic} & LLM-based planning and retrieval & 3D Scenario \\ \hline
+    Scenethesis~\cite{ling2025scenethesis} & Uses LLM to create a scenegraph and then a 3D scene & 3D Scene \\ \hline
+    SceneX~\cite{zhou2024scenex} & LLM to plan PCG (Procedural Controllable Generation) & 3D Scene \\ \hline
+    \end{tabular}
+}
+\caption{Prompt-based Models for Urban Scenario Generation}
+\label{tab:prompt_based_models}
+\end{table}
+
+\subsubsection{Multimodal Procedural Specification}
+\label{sota:generative_models:multimodal}
+
+Some works have also combined multimodal inputs with different types of data, prompts, layouts and other structured representations, to provide a richer context for scenario generation. Table~\ref{tab:multimodal_models} lists some of the recent multimodal models for urban scenario generation.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Model} & \textbf{Input Type} & \textbf{Output} \\ \hline
+    CityX~\cite{zhang2024cityx} & Prompt, OSM file or Semantic Map & 3D Scenario \\ \hline
+    CityCraft~\cite{deng2024citycraft} & Layout data and text prompts & 3D Scene \\ \hline
+    \end{tabular}}
+\caption{Multimodal Models for Urban Scenario Generation}
+\label{tab:multimodal_models}
+\end{table}
+
+\section{Problem and Open Question}
+
+While recent generative models have shown strong capabilities in synthesizing urban scenarios, they remain limited in their ability to model pedestrian dynamics within these environments. In particular, they struggle to establish a coherent link between spatio-temporal control over objects and the range of possible pedestrian interactions—an aspect that is essential for simulating realistic traffic scenarios.
+
+This leads to the following open research question:
+
+\textbf{How can natural language–conditioned generative models be leveraged to produce urban scenarios for pedestrian agents, with explicit control over objects, their interactions, and task-level guidance?}
+
+\section{Method}
+
+Figure~\ref{fig:method_overview} provides an overview of the method.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    zone/.style={rectangle, draw, rounded corners, minimum width=14cm, minimum height=3cm, fill=#1!15, inner sep=0.5cm},
+    subblock/.style={rectangle, draw, rounded corners, minimum width=5.5cm, minimum height=1.2cm, text centered, font=\footnotesize, fill=gray!10},
+    arrow/.style={->, thick, >=stealth},
+    node distance=2cm
+]
+
+% ---------------------
+% 1. Input Region
+% ---------------------
+\node[zone=blue] (input_zone) {};
+\node[anchor=north west] at (input_zone.north west) {\textbf{Input Region}};
+
+% Sub-blocks with examples (including images)
+\node[subblock, left=3.5cm of input_zone.center, anchor=center] (osm_input) 
+    {\includegraphics[width=1cm]{osm_example.png} \\ OSM Map};
+\node[subblock, right=3.5cm of input_zone.center, anchor=center] (prompt_input) 
+    {Prompt Template \\ Example: ``You are a pedestrian crossing with 2 moving cars...''};
+
+% ---------------------
+% 2. Context Extraction Region
+% ---------------------
+\node[zone=green, below=2.5cm of input_zone.south] (context_zone) {};
+\node[anchor=north west] at (context_zone.north west) {\textbf{Context Extraction Region}};
+
+\node[subblock, left=3.5cm of context_zone.center, anchor=center] (xodr_block) 
+    {\includegraphics[width=1cm]{road_network_example.png} \\ XODR Road Network Extraction};
+\node[subblock, right=3.5cm of context_zone.center, anchor=center] (context_block) 
+    {OSM Context Extraction \\ road info, intersections, traffic points, pedestrian infra, zones, affordances};
+
+% ---------------------
+% 3. Planning Region
+% ---------------------
+\node[zone=orange, below=3cm of context_zone.south] (planning_zone) {};
+\node[anchor=north west] at (planning_zone.north west) {\textbf{Planning Region}};
+
+\node[subblock, left=3.5cm of planning_zone.center, anchor=center] (prompt_block) {Prompt Template \\ Example: ``You are a...''};
+\node[subblock, right=3.5cm of planning_zone.center, anchor=center] (llm_block) {LLM Planner generates OpenSCENARIO (XOSC) file};
+\node[subblock, anchor=center] (complete_prompt) at ($(planning_zone.center)+(0,0)$) {Complete Prompt};
+
+
+% ---------------------
+% 4. Rendering Region
+% ---------------------
+\node[zone=purple, below=3cm of planning_zone.south] (rendering_zone) {};
+\node[anchor=north west] at (rendering_zone.north west) {\textbf{Rendering Region}};
+\node[subblock, left=3.5cm of rendering_zone.center, anchor=center] (xosc_block) {Custom XOSC Scenario};
+\node[subblock, right=3.5cm of rendering_zone.center, anchor=center] (render_block) {Render using Unity / GUST-3D / ESMINI};
+
+% ---------------------
+% Arrows with labels
+% ---------------------
+\draw[arrow] (osm_input.south) -- (xodr_block.north) node[midway, left] {OSM to XODR conversion};
+\draw[arrow] (osm_input.south) -- (context_block.north) node[midway, right] {Custom Context Parser};
+\draw[arrow] (prompt_input.south) -- (complete_prompt.north east) node[midway, right] {Prompt Template};
+\draw[arrow] (prompt_block.north) -- (complete_prompt.south west);
+\draw[arrow] (xodr_block.south) -- (complete_prompt.west);
+\draw[arrow] (context_block.south) -- (complete_prompt.east);
+\draw[arrow] (complete_prompt.south) -- (llm_block.north) node[midway, right] {Complete Prompt};
+\draw[arrow] (llm_block.south) -- (xosc_block.north);
+\draw[arrow] (xosc_block.east) -- (render_block.west);
+
+\end{tikzpicture}
+\caption{Overview of the guided user task scenario generation pipeline. 
+\textbf{Input Region:} OSM map and Prompt Template examples. 
+\textbf{Context Extraction Region:} XODR Road Network (with example image) and OSM Context Extraction. 
+\textbf{Planning Region:} Prompt Template, Complete Prompt block, and LLM Planner combine inputs to generate OpenSCENARIO (XOSC) file. 
+\textbf{Rendering Region:} Custom XOSC Scenario rendered with Unity / GUST-3D / ESMINI.}
+\label{fig:method_overview}
+\end{figure}
+
+
+
+\subsection{Input and Splitting}
+
+Since no existing datasets provide paired text prompts with corresponding urban layouts and tasks, we propose leveraging the capabilities of LLMs to parse and structure input prompts. Similar approaches have been explored in prior works, as shown in section~\ref{sota:generative_models:prompts}
+
+We first process the input OSM and prompt and split it into the dynamics and task description using COT (Chain-of-Thought) reasoning. Here is an example of how the input prompt can be split:
+
+\begin{tcolorbox}[examplebox, title=Scene Specification Format]
+
+\textbf{Prompt}:
+
+You are an urban scenario planning assistant. For the following urban scene prompt:\\
+
+\emph{[Urban scene description]}
+
+\vspace{1em}
+\begin{itemize}
+    \item \textbf{dynamics:} Generate an OpenScenario XML for the above prompt, the OpenDrive road network and the Open Street Maps layout.
+    
+    \item \textbf{tasks:}\\
+    Before creating tasks, review the prompt, the OpenDrive road network and the OpenScenario dynamics.
+    \begin{itemize}
+        \item Task targets must reference actual object \texttt{"type"} values in static\_layout.
+        \item Ordered list of guided actions for the pedestrian; each task must include:
+        \begin{itemize}
+            \item \texttt{id}
+            \item \texttt{goal}: \{\texttt{type, target, key\_item}\}
+            \begin{itemize}
+                \item \texttt{type}: One of [\texttt{"get"}, \texttt{"interact"}, \texttt{"interactWith"}, \texttt{"go"}, \texttt{"place\_in"}, \texttt{"place\_on"}] with exact definitions and required object layers:
+                \begin{itemize}
+                    \item \texttt{"get"}: Target must be \texttt{layer="Movable"}
+                    \item \texttt{"interact"/"interactWith"}: Target must be \texttt{layer="Interactable"}
+                    \item \texttt{"go"}: Target must be \texttt{layer="Ground"}
+                    \item \texttt{"place\_in"}: Target must be \texttt{layer="Container"}
+                    \item \texttt{"place\_on"}: Target must be \texttt{layer="Support"}
+                \end{itemize}
+                \item \texttt{target}: Must match the exact \texttt{"type"} of an existing object in static\_layout with the correct layer.
+                \item \texttt{key\_item}: Optional item needed (null if not needed)
+            \end{itemize}
+            \item \texttt{constraints}: \{\texttt{precedence}, \texttt{evaluation}\}
+            \item \texttt{help}: \{\texttt{baseline}, \texttt{target}, \texttt{failure}\}
+            \item \texttt{failure\_condition}: \{\texttt{type}, \texttt{item}\}
+            \item \texttt{instructions}: \{\texttt{text\_en}, \texttt{text\_fr}\}
+            \item \texttt{trigger}: \{\texttt{object\_id}, \texttt{function}\}
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\vspace{1em}
+
+\textbf{Input Example}: \\
+
+\emph{}\\
+
+\textbf{OSM layout:}\\
+\includegraphics[width=0.8\linewidth]{images/osm_layout_example.png}
+
+
+\noindent\textbf{Output Example:}
+
+\textbf{OpenScenario Dynamics Visualization:}\\
+\includegraphics[width=0.8\linewidth]{images/openscenario_visualization_example.png}
+
+
+
+\textbf{Tasks:}
+\begin{itemize}[leftmargin=1.2em]
+    \item Walk from 
+\end{itemize}
+
+JSON for the above available in appendix section~\ref{app:examples:example_json}
+
+\end{tcolorbox}
+
+\subsection{Tasks}
+
+The tasks predicted by the LLM are a sequence of guided actions to be performed by the player or agent in the environment. Each task is defined as a structured object, similar to the following JSON format:
+
+\begin{itemize}
+    \item \textbf{id:} a unique identifier for the task.
+
+    \item \textbf{goal:} specifies the type of action, the target object, and optionally a key item needed to perform the action.
+    \begin{itemize}
+        \item \texttt{type} -- one of the following:
+        \begin{itemize}
+            \item \texttt{get}: locate and pick up an object (target must have layer ``Movable'').
+            \item \texttt{interact}: interact with an object (target must have layer ``Interactable'').
+            \item \texttt{interactWith}: interact with a specific object using a key item (target has layer ``Interactable'').
+            \item \texttt{go}: navigate to a location (target must have layer ``Ground'').
+            \item \texttt{place\_in}: place an object inside a container (target has layer ``Container'', requires \texttt{key\_item}).
+            \item \texttt{place\_on}: place an object on a support surface (target has layer ``Support'', requires \texttt{key\_item}).
+        \end{itemize}
+        \item \texttt{target} -- the identifier of the target object, using the GUST annotation format:
+        \begin{itemize}
+            \item Ground objects (layer ``Ground''): \texttt{objecttype\_x.0\_y.0}, e.g., \texttt{sidewalk\_50.0\_62.0}, \texttt{road\_50.0\_50.0}.
+            \item Other objects: \texttt{objecttype\_id}, e.g., \texttt{traffic\_light\_4}, \texttt{table\_6}, \texttt{flower\_pot\_8}.
+        \end{itemize}
+        \item \texttt{key\_item} -- optional object required to perform the task (null for simple tasks, required for \texttt{place\_in}, \texttt{place\_on}, and \texttt{interactWith} tasks).
+    \end{itemize}
+
+    \item \textbf{baselineTime:} time in seconds that a baseline user should take to complete the task (typically 10--30 seconds for simple tasks, 30--60 seconds for complex tasks).
+
+    \item \textbf{targetTime:} maximum time in seconds allowed for the user to complete the task (typically 1.5--2× \texttt{baselineTime}).
+
+    \item \textbf{Help system:} provides progressive assistance to the user at different stages.
+    \begin{itemize}
+        \item \texttt{baselineHelp}: type of help provided after \texttt{baselineTime} elapses (``text'', ``path'', or ``nothing'').
+        \item \texttt{targetHelp}: type of help provided after \texttt{targetTime} elapses (``text'', ``path'', or ``nothing'').
+        \item \texttt{failureHelp}: type of help provided after task failure (``text'', ``path'', or ``nothing'').
+        \item \texttt{baselineText}: English help text shown after \texttt{baselineTime} (e.g., ``Walk straight along the sidewalk'').
+        \item \texttt{targetText}: English help text shown after \texttt{targetTime} (e.g., ``Reach the sidewalk safely'').
+        \item \texttt{failureText}: English help text shown after failure (e.g., ``Stay on designated walking areas'').
+    \end{itemize}
+
+    \item \textbf{Failure conditions:} defines when and how the task fails.
+    \begin{itemize}
+        \item \texttt{failure}: type of failure condition (``collision'' or ``none'').
+        \item \texttt{failureItem}: object that causes failure when collided with (e.g., ``vehicle'', ``person''; null if \texttt{failure} is ``none'').
+    \end{itemize}
+
+    \item \textbf{constraints:} includes task ordering and evaluation criteria.
+    \begin{itemize}
+        \item \texttt{precedence}: list of task IDs that must be completed before this task can begin.
+        \item \texttt{evaluation}: condition that defines successful task completion (e.g., ``on\_sidewalk'', ``item\_picked\_up'').
+    \end{itemize}
+
+    \item \textbf{instructions:} natural language instructions for the player in multiple languages.
+    \begin{itemize}
+        \item \texttt{text\_en}: English instructions (e.g., ``Walk to the sidewalk at position [50, 62]'').
+        \item \texttt{text\_fr}: French instructions (e.g., ``Marchez vers le trottoir à la position [50, 62]'').
+    \end{itemize}
+
+    \item \textbf{trigger:} specifies the object and function that triggers task completion.
+    \begin{itemize}
+        \item \texttt{object\_id}: ID of the object from \texttt{static\_layout}.
+        \item \texttt{function}: trigger function name (e.g., ``on\_reach'', ``on\_interact'', ``on\_pickup'').
+    \end{itemize}
+\end{itemize}
+
+The structure is based on the existing GUsT-3D framework~\cite{wu2022designing} and is integrated with the existing system to provide guided task execution with real-time feedback and progressive assistance.
+
+\section{Implementation}
+
+The implementation of the system is divided into two components — the \textbf{Backend (Python)} and the \textbf{Frontend (Unity)} — which together enable interaction between the LLM and the Unity-based scenario generation environment.
+
+\subsection{Backend (Python) Implementation}
+
+The backend is implemented as an HTTP server in Python that interfaces with the LLM to process requests and manage data flow between the model and the Unity client.
+It exposes two primary \texttt{POST} endpoints:
+
+\begin{itemize}
+    \item \textbf{/get\_3d} – Receives the OSM bounding box coordinates and returns the 3D scene. For generating the OSM scene, we modify the existing \href{https://github.com/vvoovv/blosm}{blosm addon} for Blender to add support for trash, crosswalks, bus stops and traffic lights.
+    \item \textbf{/get\_scenario} – Sends the prompt and receives the OpenScenario dynamics as well as the GUTasks from the Qwen3 LLM agent.
+\end{itemize}
+
+\subsubsection{Blosm implementation}
+
+The \href{https://github.com/vvoovv/blosm}{blosm addon} for Blender is extended to add support for trash, crosswalks, bus stops and traffic lights. However, the OSM semantics only provide positional information and no orientation information of the semantic classes. Thus, for elements dependent on the road direction, we use algorithm~\ref{alg:alignment} to calculate the orientation of 3D assets.
+
+\begin{algorithm}[H]
+\caption{Compute Orientation for Road-Aligned OSM Objects}
+\label{alg:alignment}
+\begin{algorithmic}[1]
+\Require Semantic object $O$ (e.g., crosswalk, bus stop) with position $p_O$  
+\Require OSM road network $R$ composed of segments $S_i$ with start and end coordinates
+\Ensure Orientation vector $\vec{d}_O$ for the 3D asset
+
+\State Find the nearest road segment $S_n$ to $p_O$
+\State Compute the road direction vector $\vec{v}_n$ of $S_n$:
+\[
+\vec{v}_n = \frac{S_n.\text{end} - S_n.\text{start}}{\|\ S_n.\text{end} - S_n.\text{start} \|\ }
+\]
+
+\If{$O$ is a crosswalk}
+    \State $\vec{d}_O \gets$ vector perpendicular to $\vec{v}_{road}$
+\ElsIf{$O$ is a bus stop or traffic light}
+    \State $\vec{d}_O \gets \vec{v}_{road}$ \Comment{aligned parallel to the road}
+\Else
+    \State $\vec{d}_O \gets \vec{v}_{road}$ \Comment{default: parallel to road}
+\EndIf
+
+\State Place 3D asset for object $O$ at position $p_O$ with orientation $\vec{d}_O$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Frontend (Unity) Implementation}
+
+The frontend is developed as a part of the existing GUsT-3D add-on. It communicates with the Python backend via HTTP, sending requests to the defined endpoints and parsing the responses to generate the scenarios within Unity. 
+
+For the OpenScenario interpretation, we modify the \href{https://github.com/esmini/esmini}{esmini addon} and add support for pedestrians.
+
+
+\section{Experiments}
+\label{sec:experiments}
+
+This section presents a log of all experiments conducted to generate the dynamics and tasks with the \textit{LLM}. 
+
+\subsection{Experiment 1}
+
+
+\section{Evaluation}
+\label{evaluation}
+
+\subsection{Quantitative Evaluation}
+\label{evaluation:quant}
+
+To assess the fidelity and diversity of the generated results, we use the following metrics.
+
+\subsubsection{Dynamics Interpretation Success Rate}
+The dynamics are considered successfully interpretable if the generated OpenScenario XML can be loaded and visualized in Unity.
+
+\subsubsection{Prompt Adherence for Tasks and Dynamics}
+Since no ground-truth scenarios are available for open-ended prompts, we evaluate the semantic quality of generated outputs in terms of \textit{prompt adherence}. Prompt adherence measures how faithfully the generated tasks and dynamics satisfy the semantic requirements explicitly specified in the input prompt.
+
+For each prompt, we extract a set of requested semantic classes, including task types, dynamic behaviors, road and environment attributes, agent roles, and quantitative constraints (e.g., speed ranges or traffic density). From the generated OpenSCENARIO XML and GUTasks representation, we then extract the corresponding set of realized semantic classes.
+
+Prompt adherence is evaluated using precision and recall over these semantic classes. Precision measures the extent to which generated elements are relevant to the prompt and penalizes the introduction of hallucinated or unrequested behaviors. Recall measures the completeness of the generation with respect to the prompt and captures whether all requested tasks and dynamics are present in the output.
+
+Formally, let $R$ denote the set of semantic classes requested by the prompt and $G$ the set of semantic classes extracted from the generated output. Prompt precision and recall are defined as:
+\[
+\text{Precision} = \frac{|R \cap G|}{|G|}, \quad
+\text{Recall} = \frac{|R \cap G|}{|R|}
+\]
+
+For quantitative attributes, such as speeds or timing constraints, a class is considered correctly generated if the corresponding value lies within a predefined tolerance range.
+
+\subsubsection{GUTasks Interpretation Success Rate}
+Generated GUTasks are considered successfully interpretable if GuST-3D and Unity can load and process them.
+
+\subsubsection{Task Feasibility Rate}
+Generated tasks are considered feasible if their required navigation and interaction components can be realized within the simulation environment. Specifically, navigation tasks are deemed feasible if a valid path exists for Unity's NavMesh Agent between the specified start and goal states. Interaction tasks are considered feasible if their preconditions, such as spatial distance, visibility, and agent states, can be satisfied during execution.
+
+\subsection{Qualitative Evaluation}
+\label{evaluation:qualitative}
+
+For our experiments, we evaluate the generation qualitatively using a fixed set of predefined prompts, as well as through a user study in which participants freely author their own prompts and generate corresponding scenes.
+
+\subsubsection{Prompts}
+
+We assess the pipeline along two complementary axes: prompt specificity and scenario plausibility. This framework is informed by SOTA practices in which prompts are structured to test the model across a spectrum of detail, starting from vague to detailed, structured guidelines (rubric).
+
+\begin{itemize}
+    \item \textbf{Prompt specificity:} Measures the model's robustness to variations in instruction detail~\cite{murugadoss2025evaluating, xu2025large}.
+    \begin{itemize}
+        \item \emph{Vague prompts:} Underspecified instructions for generating urban scenarios, where the model must infer missing details. For example, "Generate an urban scenario with streets and buildings" leaves most design aspects open to the model.
+
+        \item \emph{Criteria Specific prompts:} Prompts that specify the desired properties or evaluation criteria for the urban scenario, without detailing exact layouts or steps. For instance, "Generate an urban scenario that is realistic, has safe traffic flow, and includes diverse building types" guides the model toward satisfying these properties while leaving implementation and arrangement open.
+
+        \item \emph{Detailed prompts (Rubric):} Fully specified instructions with explicit objectives, constraints, and optional step-by-step guidance for urban scene generation. This may include a rubric enumerating required features, such as "Generate an urban scenario with at least three traffic intersections with controlled signals, a sidewalk along the road and a crosswalk every 50 metres, and pedestrian pathways connecting all major areas. Agent arrives from the north, presses on the pedestrian light and then crosses the road when green."
+    \end{itemize}
+
+    \item \textbf{Scenario plausibility:} Evaluates the realism, logical coherence, and potential risk of the model-generated tasks~\cite{parmar2024logicbench, zhu2023promptbench}.
+    \begin{itemize}
+        \item \emph{Illogical scenarios:} Contain contradictory or impossible instructions to probe reasoning limitations . Example, "Create a scenario with no roads with busy traffic. Agent must cross using the crosswalk."
+        \item \emph{Realistic scenarios:} Plausible, safe instructions representing typical interactions. Example, "Create a scenario with multiple cars and bicycles. Agent must wait for the pedestrian signal before crossing."
+        \item \emph{Critical scenarios:} Edge-case or high-risk tasks revealing latent model limitations. Example, Jaywalking, Parking lot navigation, etc.
+        %\item \emph{Prompts reflecting original GUsT-3D scenarios:} Baseline scenarios sourced directly from the dataset for comparison with prior work.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Prompt Grid Design}
+To systematically explore model behavior, each task is tested using prompts that span the two axes.
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\textbf{Prompt Specificity} & \textbf{Illogical} & \textbf{Realistic} & \textbf{Critical} \\ \hline
+\textbf{Vague} & P1 & P2 & P3 \\
+\textbf{Detailed} & P4 & P5 & P6
+\end{tabular}
+\end{center}
+
+
+\subsubsection{User Studies}
+In addition to evaluation using predefined prompts, we conduct a user study to qualitatively assess the behavior of the system under open-ended, user-authored inputs.
+
+\clearpage
+\section*{Appendix}
+
+\section{Examples}
+
+\subsection{Generated JSON Example}
+\label{app:examples:example_json}
+
+\begin{verbatim}
+\end{verbatim}
+
+\subsection{Meeting Notes}
+
+
+\subsubsection{06/01/2026}
+
+\begin{itemize}
+    \item \textbf{OSM Ontology tree:} Look for the complete OSM ontology tree.
+    
+    \item \textbf{Architecture diagram:} Add the complete architecture diagram of the system from OSM procedural generation to Scenario generation.
+    
+    \item \textbf{Finalise the ontology for extending the XOSC:} Finalize the ontology needed to extend the OpenScenario format. Focus on 5 categories - Static objects for interaction, Dynamic Objects  with no interaction, Dynamic objects with interactions, purely static objects and user-controlled.
+
+    \item \textbf{Fix OSM generation:} Come up with a way to fix the orientations of the street furniture in OSM generations.
+
+    \item \textbf{Use INRIA road network for reference:} Example, driving a car on the rue de lucioles.
+\end{itemize}
+
+\subsubsection{14/01/2026}
+
+\begin{itemize}
+    \item \textbf{Schema: } Add the OpenScenario schema tree in the doc for reference.
+    \item \textbf{Focus on Navigation: } Start with navigation tasks from A to B for validation.
+    \item \textbf{Extend OpenScenario DSL: } Extend the DSL Actions and entities to support navigation scenarios.
+    \item \textbf{Pharmacy example: } Low vision patients tend to confuse pharmacies with green light, a scenario for that could be interesting.
+    \item \textbf{Finalize the LLM part: } Finalize how LLM can take a functional description and create a valid open scenario from it.    
+\end{itemize}
+
+
+\bibliographystyle{abbrv}
+\bibliography{main}
+
+\end{document}

@@ -9,6 +9,34 @@
 \usepackage{algpseudocode}
 \usetikzlibrary{decorations.pathreplacing}
 \usetikzlibrary{calc}
+\usetikzlibrary{fit,backgrounds,positioning}
+\usepackage{adjustbox}    % Add this in your preamble
+\usepackage{rotating}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Light gray background for code boxes
+\definecolor{codebg}{rgb}{0.95,0.95,0.95} % light gray
+\definecolor{keywordcolor}{rgb}{0,0,0.6}  % dark blue for keywords
+\definecolor{commentcolor}{rgb}{0.13,0.55,0.13} % green for comments
+\definecolor{stringcolor}{rgb}{0.63,0.13,0.94} % purple for strings
+
+% Python style
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{codebg}, % light background
+    frame=single, % box
+    rulecolor=\color{black}, 
+    basicstyle=\ttfamily\footnotesize, % dark text
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    breaklines=true,
+    captionpos=b,
+    numbers=left,
+    numberstyle=\tiny,
+    xleftmargin=10pt,
+    xrightmargin=10pt,
+}
 
 
 \title{Scenario Generation for Interactive Urban Environments}
@@ -102,12 +130,21 @@ The most widely used formats in autonomous driving research include:
 \begin{itemize}
     \item \textbf{Scenic}~\cite{fremont2019scenic}: a probabilistic domain-specific language for defining constraints, distributions, and relationships among agents. Scenarios specified in Scenic can be sampled into concrete instances.
     
-    \item \textbf{OpenSCENARIO DSL}~\cite{ASAMOpenSCENARIODSL}:  an open standard for describing the dynamic content of scenarios used in driving and traffic simulators.
+    \item \textbf{OpenSCENARIO DSL}~\cite{ASAMOpenSCENARIODSL} is an open standard for describing dynamic scenarios in driving and traffic simulators. Scenarios can be defined at four levels—concrete, logical, abstract, and functional~\cite{ASAMOpenSCENARIO}—and are typically composed of three main components: \textbf{Entities} (vehicles, pedestrians, traffic signs, obstacles), \textbf{Road Network} (the road layout and topology), and \textbf{Storyboard} (containing Story, which further defines Actions, including maneuvers, trajectories, and decision logic). Figure~\ref{app:fig:openscenario_tree} illustrates this hierarchical structure, which provides a systematic framework for defining and simulating urban scenarios.
+
     
     \item \textbf{GeoScenario DSL}~\cite{8814107}: similar to OpenSCENARIO, but provides concrete, executable scenario specifications with explicit positions, trajectories, and temporal details, making scenarios directly runnable and reusable across different simulation platforms.
     
     \item \textbf{ScenarioNet}~\cite{li2023scenarionet}: built on real-world data for structured, executable traffic scenarios.
 \end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.6\textwidth]{images/qual_scenario_descr.png}
+    \caption{OpenScenario Levels of Abstraction~\cite{ASAMOpenSCENARIO}}
+    \label{fig:openscenario_levels}
+\end{figure}
+
 
 \subsubsection{Prompt-based Procedural Specification}
 \label{sota:generative_models:prompts}
@@ -154,162 +191,316 @@ Some works have also combined multimodal inputs with different types of data, pr
 
 \section{Problem and Open Question}
 
-While recent generative models have shown strong capabilities in synthesizing urban scenarios, they remain limited in their ability to model pedestrian dynamics within these environments. In particular, they struggle to establish a coherent link between spatio-temporal control over objects and the range of possible pedestrian interactions—an aspect that is essential for simulating realistic traffic scenarios.
+Recent generative models have demonstrated strong capabilities in synthesizing urban scenarios, yet they remain limited in modeling pedestrian dynamics within these environments. Specifically, they struggle to generate a pedestrian agent's actions based on a functional description of a scenario.
 
-This leads to the following open research question:
+This motivates the following open research question:
 
-\textbf{How can natural language–conditioned generative models be leveraged to produce urban scenarios for pedestrian agents, with explicit control over objects, their interactions, and task-level guidance?}
+\textbf{How can large language models be leveraged to generate urban scenarios for pedestrian agents using functional scenario descriptions?}
 
 \section{Method}
 
-Figure~\ref{fig:method_overview} provides an overview of the method.
 
-\begin{figure}[ht]
+
+\subsection{Pedestrian Navigation Task Taxonomy}
+\label{sec:task_taxonomy}
+
+\subsubsection{Scope and Inclusion Criteria}
+
+The
+task description in the scenario specifies navigation objectives, constraints, triggers, and
+evaluation conditions, while execution and decision-making are performed
+by the user.
+
+We define a pedestrian navigation task as an atomic interaction unit
+that satisfies the following criteria:
+
+\begin{itemize}
+    \item \textbf{Intentionality}: the task encodes a clear navigation
+    objective or decision the user must perform.
+    \item \textbf{Environmental grounding}: the task is defined with
+    respect to explicit spatial, traffic, or semantic elements of the
+    environment.
+    \item \textbf{Evaluability}: the task admits objective success and
+    failure conditions observable by the simulator.
+    \item \textbf{Composability}: the task can be combined sequentially
+    or hierarchically with other tasks to form longer scenarios.
+    \item \textbf{Scenario expressibility}: the task can be represented
+    declaratively using OpenSCENARIO-style constructs (e.g., goals,
+    constraints, triggers).
+\end{itemize}
+
+Tasks that differ only in low-level motion execution are excluded, as
+locomotion is performed by the user and not modeled by the system.
+
+\subsubsection{Task Taxonomy}
+
+Table~\ref{tab:ped_tasks} summarizes the resulting pedestrian navigation
+task taxonomy, including task definitions and corresponding success and
+failure conditions.
+
+\begin{table}[t]
 \centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{2.4cm} p{3.2cm} p{3.0cm} p{3.0cm}}
+\hline
+\textbf{Task} &
+\textbf{Description} &
+\textbf{Success} &
+\textbf{Failure} \\
+\hline
+
+Point-to-point &
+Reach a target location via walkable areas &
+Target reached within tolerance &
+Restricted area or timeout \\
+
+Crosswalk-based &
+Cross road using designated crosswalk &
+Crossing completed within crosswalk &
+Leaving crosswalk \\
+
+Multi-step routes &
+Complete ordered sequence of sub-goals &
+All sub-goals completed in order &
+Skipped or reordered steps \\
+
+Traffic-aware crossing &
+Initiate crossing with safe traffic gap &
+Gap above safety threshold &
+Unsafe gap selection \\
+
+Constrained path &
+Navigate using permitted paths only &
+Destination reached compliantly &
+Forbidden path usage \\
+
+Environmental constrained &
+Avoid static or semantic obstacles &
+Target reached without violation &
+Restricted zone entry \\
+
+Triggered navigation &
+Begin movement after event trigger &
+Movement after trigger condition &
+Premature or missed trigger \\
+
+Tolerance-based &
+Reach target with positional precision &
+Within tolerance region &
+Outside tolerance bounds \\
+
+Dynamic navigation &
+Adapt path to dynamic obstacles &
+Successful re-routing &
+Deadlock or violation \\
+
+Speed adaptation &
+Adapt walking speed to context &
+Speed within bounds &
+Speed constraint violation \\
+
+\hline
+\end{tabular}
+\caption{Pedestrian navigation task taxonomy with success and failure conditions.}
+\label{tab:ped_tasks}
+\end{table}
+
+
+We based our method on the task description of the existing GUsT-3D framework~\cite{wu2022designing} and extended the existing OpenSCENARIO specification to include pedestrian tasks. Figure~\ref{fig:method_overview} provides an overview of the method.
+
+
+% ---- figure ----
+\begin{figure}[h]
+\centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-    zone/.style={rectangle, draw, rounded corners, minimum width=14cm, minimum height=3cm, fill=#1!15, inner sep=0.5cm},
-    subblock/.style={rectangle, draw, rounded corners, minimum width=5.5cm, minimum height=1.2cm, text centered, font=\footnotesize, fill=gray!10},
+    zone/.style={
+        rectangle, draw, rounded corners,
+        fill=#1!15, inner sep=0.5cm
+    },
+    regionbox/.style={
+        minimum width=6.2cm,
+        minimum height=7.2cm
+    },
+    subblock/.style={
+        rectangle, draw, rounded corners,
+        minimum width=5cm, minimum height=1.2cm,
+        text centered, font=\footnotesize,
+        fill=gray!10
+    },
     arrow/.style={->, thick, >=stealth},
-    node distance=2cm
+    node distance=0.8cm
 ]
 
-% ---------------------
-% 1. Input Region
-% ---------------------
-\node[zone=blue] (input_zone) {};
-\node[anchor=north west] at (input_zone.north west) {\textbf{Input Region}};
+% =====================
+% 1. INPUT REGION
+% =====================
+\node[subblock] (osm_input)
+    {\includegraphics[width=4cm]{images/osm_example.png}};
+\node[anchor=north] at (osm_input.south) {OSM Map};
 
-% Sub-blocks with examples (including images)
-\node[subblock, left=3.5cm of input_zone.center, anchor=center] (osm_input) 
-    {\includegraphics[width=1cm]{osm_example.png} \\ OSM Map};
-\node[subblock, right=3.5cm of input_zone.center, anchor=center] (prompt_input) 
-    {Prompt Template \\ Example: ``You are a pedestrian crossing with 2 moving cars...''};
+\node[subblock, below=0.5cm of osm_input.south, anchor=north] (prompt_input)
+    {Generate a scenario where...};
+\node[anchor=north] at (prompt_input.south) {Prompt};
 
-% ---------------------
-% 2. Context Extraction Region
-% ---------------------
-\node[zone=green, below=2.5cm of input_zone.south] (context_zone) {};
-\node[anchor=north west] at (context_zone.north west) {\textbf{Context Extraction Region}};
+\begin{scope}[on background layer]
+\node[
+    zone=blue,
+    regionbox,
+    fit=(osm_input)(prompt_input)
+] (input_zone) {};
+\node[anchor=north west] at (input_zone.north west) {\textbf{Input}};
+\end{scope}
 
-\node[subblock, left=3.5cm of context_zone.center, anchor=center] (xodr_block) 
-    {\includegraphics[width=1cm]{road_network_example.png} \\ XODR Road Network Extraction};
-\node[subblock, right=3.5cm of context_zone.center, anchor=center] (context_block) 
-    {OSM Context Extraction \\ road info, intersections, traffic points, pedestrian infra, zones, affordances};
+% =====================
+% 2. CONTEXT REGION
+% =====================
+\node[
+    subblock,
+    right=1.2cm of input_zone.north east,
+    anchor=north west
+] (xodr_block)
+    {\includegraphics[width=3cm]{images/road_network_example.png}};
+\node[anchor=north] at (xodr_block.south)
+    {XODR Road Network};
 
-% ---------------------
-% 3. Planning Region
-% ---------------------
-\node[zone=orange, below=3cm of context_zone.south] (planning_zone) {};
-\node[anchor=north west] at (planning_zone.north west) {\textbf{Planning Region}};
+\node[
+    subblock,
+    below=0.5cm of xodr_block.south,
+    anchor=north,
+    font=\scriptsize
+] (context_block)
+    {Road info, intersections...};
+\node[anchor=north] at (context_block.south)
+    {OSM Context};
 
-\node[subblock, left=3.5cm of planning_zone.center, anchor=center] (prompt_block) {Prompt Template \\ Example: ``You are a...''};
-\node[subblock, right=3.5cm of planning_zone.center, anchor=center] (llm_block) {LLM Planner generates OpenSCENARIO (XOSC) file};
-\node[subblock, anchor=center] (complete_prompt) at ($(planning_zone.center)+(0,0)$) {Complete Prompt};
+\begin{scope}[on background layer]
+\node[
+    zone=green,
+    regionbox,
+    fit=(xodr_block)(context_block)
+] (context_zone) {};
+\node[anchor=north west] at (context_zone.north west)
+    {\textbf{Context Extraction}};
+\end{scope}
 
+% =====================
+% 3. PLANNING REGION
+% =====================
+\node[
+    subblock,
+    right=1.2cm of context_zone.north east,
+    anchor=north west,
+    font=\scriptsize,
+    text width=4.6cm,
+    align=left
+] (stage1)
+{\textbf{Stage 1: Scene Setup}
 
-% ---------------------
-% 4. Rendering Region
-% ---------------------
-\node[zone=purple, below=3cm of planning_zone.south] (rendering_zone) {};
-\node[anchor=north west] at (rendering_zone.north west) {\textbf{Rendering Region}};
-\node[subblock, left=3.5cm of rendering_zone.center, anchor=center] (xosc_block) {Custom XOSC Scenario};
-\node[subblock, right=3.5cm of rendering_zone.center, anchor=center] (render_block) {Render using Unity / GUST-3D / ESMINI};
+Parse prompt + context; output entities and initial positions};
 
-% ---------------------
-% Arrows with labels
-% ---------------------
-\draw[arrow] (osm_input.south) -- (xodr_block.north) node[midway, left] {OSM to XODR conversion};
-\draw[arrow] (osm_input.south) -- (context_block.north) node[midway, right] {Custom Context Parser};
-\draw[arrow] (prompt_input.south) -- (complete_prompt.north east) node[midway, right] {Prompt Template};
-\draw[arrow] (prompt_block.north) -- (complete_prompt.south west);
-\draw[arrow] (xodr_block.south) -- (complete_prompt.west);
-\draw[arrow] (context_block.south) -- (complete_prompt.east);
-\draw[arrow] (complete_prompt.south) -- (llm_block.north) node[midway, right] {Complete Prompt};
-\draw[arrow] (llm_block.south) -- (xosc_block.north);
-\draw[arrow] (xosc_block.east) -- (render_block.west);
+\node[
+    subblock,
+    below=0.5cm of stage1.south,
+    anchor=north,
+    font=\scriptsize,
+    text width=4.6cm,
+    align=left
+] (stage2)
+{\textbf{Stage 2: Entity Creation}
+
+Define vehicles, pedestrians, and attributes};
+
+\node[
+    subblock,
+    below=0.5cm of stage2.south,
+    anchor=north,
+    font=\scriptsize,
+    text width=4.6cm,
+    align=left
+] (stage3)
+{\textbf{Stage 3: Behavior \& Trajectory}
+
+Generate movements, routes, and actions};
+
+\node[
+    subblock,
+    below=0.5cm of stage3.south,
+    anchor=north,
+    font=\scriptsize,
+    text width=4.6cm,
+    align=left
+] (stage4)
+{\textbf{Stage 4: VR Tasks}
+
+Create VR\_TASK actions};
+
+\begin{scope}[on background layer]
+\node[
+    zone=orange,
+    regionbox,
+    fit=(stage1)(stage4)
+] (planning_zone) {};
+\node[anchor=north west] at (planning_zone.north west)
+    {\textbf{Generation}};
+\end{scope}
+
+% =====================
+% 4. RENDERING REGION (unchanged)
+% =====================
+
+\node[
+    subblock,
+    below=1cm of context_zone.south
+] (render_block)
+    {Unity / GUST-3D / ESMINI};
+
+\begin{scope}[on background layer]
+\node[
+    zone=purple,
+    fit=(render_block),
+    inner sep=0.8cm
+] (rendering_zone) {};
+\node[anchor=north west] at (rendering_zone.north west)
+    {\textbf{Rendering}};
+\end{scope}
+
+% =====================
+% ARROWS (foreground)
+% =====================
+
+\draw[arrow] (osm_input.east) -- ++(1,0) |- (xodr_block.west);
+\draw[arrow] (osm_input.east) -- ++(1,0) |- (context_block.west);
+\draw[arrow] (prompt_input.east) -- ++(1,0) |- (stage1.west);
+\draw[arrow] (xodr_block.east) -- ++(1,0) |- (stage1.west);
+\draw[arrow] (context_block.east) -- ++(1,0) |- (stage1.west);
+
+\draw[arrow]
+  (stage4.east)
+  -- ++(1.2,0)
+  |- (stage1.east)
+  node[pos=0.1, sloped, font=\scriptsize, yshift=5pt]
+  {scenario invalid};
+
+\draw[arrow]
+  (stage4.south)
+  -- ++(1.2,0)
+  |- (render_block.east)
+  node[pos=0.3, sloped, font=\scriptsize, yshift=5pt]
+  {scenario valid};
+
 
 \end{tikzpicture}
-\caption{Overview of the guided user task scenario generation pipeline. 
-\textbf{Input Region:} OSM map and Prompt Template examples. 
-\textbf{Context Extraction Region:} XODR Road Network (with example image) and OSM Context Extraction. 
-\textbf{Planning Region:} Prompt Template, Complete Prompt block, and LLM Planner combine inputs to generate OpenSCENARIO (XOSC) file. 
-\textbf{Rendering Region:} Custom XOSC Scenario rendered with Unity / GUST-3D / ESMINI.}
+}
+\caption{Overview of the scenario generation pipelin}
 \label{fig:method_overview}
 \end{figure}
 
 
+\subsection{Input}
 
-\subsection{Input and Splitting}
-
-Since no existing datasets provide paired text prompts with corresponding urban layouts and tasks, we propose leveraging the capabilities of LLMs to parse and structure input prompts. Similar approaches have been explored in prior works, as shown in section~\ref{sota:generative_models:prompts}
-
-We first process the input OSM and prompt and split it into the dynamics and task description using COT (Chain-of-Thought) reasoning. Here is an example of how the input prompt can be split:
-
-\begin{tcolorbox}[examplebox, title=Scene Specification Format]
-
-\textbf{Prompt}:
-
-You are an urban scenario planning assistant. For the following urban scene prompt:\\
-
-\emph{[Urban scene description]}
-
-\vspace{1em}
-\begin{itemize}
-    \item \textbf{dynamics:} Generate an OpenScenario XML for the above prompt, the OpenDrive road network and the Open Street Maps layout.
-    
-    \item \textbf{tasks:}\\
-    Before creating tasks, review the prompt, the OpenDrive road network and the OpenScenario dynamics.
-    \begin{itemize}
-        \item Task targets must reference actual object \texttt{"type"} values in static\_layout.
-        \item Ordered list of guided actions for the pedestrian; each task must include:
-        \begin{itemize}
-            \item \texttt{id}
-            \item \texttt{goal}: \{\texttt{type, target, key\_item}\}
-            \begin{itemize}
-                \item \texttt{type}: One of [\texttt{"get"}, \texttt{"interact"}, \texttt{"interactWith"}, \texttt{"go"}, \texttt{"place\_in"}, \texttt{"place\_on"}] with exact definitions and required object layers:
-                \begin{itemize}
-                    \item \texttt{"get"}: Target must be \texttt{layer="Movable"}
-                    \item \texttt{"interact"/"interactWith"}: Target must be \texttt{layer="Interactable"}
-                    \item \texttt{"go"}: Target must be \texttt{layer="Ground"}
-                    \item \texttt{"place\_in"}: Target must be \texttt{layer="Container"}
-                    \item \texttt{"place\_on"}: Target must be \texttt{layer="Support"}
-                \end{itemize}
-                \item \texttt{target}: Must match the exact \texttt{"type"} of an existing object in static\_layout with the correct layer.
-                \item \texttt{key\_item}: Optional item needed (null if not needed)
-            \end{itemize}
-            \item \texttt{constraints}: \{\texttt{precedence}, \texttt{evaluation}\}
-            \item \texttt{help}: \{\texttt{baseline}, \texttt{target}, \texttt{failure}\}
-            \item \texttt{failure\_condition}: \{\texttt{type}, \texttt{item}\}
-            \item \texttt{instructions}: \{\texttt{text\_en}, \texttt{text\_fr}\}
-            \item \texttt{trigger}: \{\texttt{object\_id}, \texttt{function}\}
-        \end{itemize}
-    \end{itemize}
-\end{itemize}
-\vspace{1em}
-
-\textbf{Input Example}: \\
-
-\emph{}\\
-
-\textbf{OSM layout:}\\
-\includegraphics[width=0.8\linewidth]{images/osm_layout_example.png}
-
-
-\noindent\textbf{Output Example:}
-
-\textbf{OpenScenario Dynamics Visualization:}\\
-\includegraphics[width=0.8\linewidth]{images/openscenario_visualization_example.png}
-
-
-
-\textbf{Tasks:}
-\begin{itemize}[leftmargin=1.2em]
-    \item Walk from 
-\end{itemize}
-
-JSON for the above available in appendix section~\ref{app:examples:example_json}
-
-\end{tcolorbox}
 
 \subsection{Tasks}
 
@@ -514,12 +705,298 @@ To systematically explore model behavior, each task is tested using prompts that
 In addition to evaluation using predefined prompts, we conduct a user study to qualitatively assess the behavior of the system under open-ended, user-authored inputs.
 
 \clearpage
-\section*{Appendix}
+\section{Appendix}
 
-\section{Examples}
+\subsection{Original OpenSCENARIO specification}
+A brief tree of the OpenSCENARIO specification is show in figure~\ref{app:fig:openscenario_tree}
 
-\subsection{Generated JSON Example}
-\label{app:examples:example_json}
+\subsection{Ontology of CustomCommandAction}
+
+\begin{table}[h!]
+\centering
+\caption{CustomCommandAction Ontology}
+\begin{tabular}{|l|p{5cm}|l|p{6cm}|} 
+\hline
+\textbf{Field} & \textbf{Type / Options} & \textbf{Required?} & \textbf{Description / Purpose} \\
+\hline
+id & Integer & Yes & Unique identifier for the task; used to order tasks in the guided action sequence. \\
+\hline
+goal.type & Enum: get, interact, interactWith, go, place\_in, place\_on & Yes & \texttt{get → Movable, interact/interactWith → Interactable, go → Ground, place\_in → Container, place\_on → Support}. \\
+\hline
+goal.target & String & Yes & Must reference an actual object type in \texttt{static\_layout} matching the required layer for the task type. \\
+\hline
+goal.key\_item & String / null & No & Optional item required to complete the task; null if not needed. \\
+\hline
+constraints.precedence & Integer & No & Defines ordering relative to other tasks; lower numbers execute first. \\
+\hline
+constraints.evaluation & String (accuracy, completion time, success/fail, custom) & No & Criteria for assessing task completion. \\
+\hline
+help.baseline & String & No & Guidance message describing standard execution. \\
+\hline
+help.target & String & No & Guidance message highlighting the goal or object of interest. \\
+\hline
+help.failure & String & No & Guidance message for failure conditions or corrective action. \\
+\hline
+failure\_condition.type & Enum: Collision, Timeout, IncorrectTarget, Misstep & No & Type of failure that can terminate or penalize the task. \\
+\hline
+failure\_condition.item & String & No & Object or condition that triggers failure (e.g., Vehicle, Pedestrian, Door). \\
+\hline
+instructions.text\_en & String & Yes & Human-readable instructions in English for the pedestrian. \\
+\hline
+instructions.text\_fr & String & No & Human-readable instructions in French (or other languages). \\
+\hline
+trigger.object\_id & String & No & Optional object whose state or event triggers the start of this task. \\
+\hline
+trigger.function & String & No & Function or event of the trigger object that initiates task execution. \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+\subsection{Examples}
+\label{app:examples}
+
+The following example represents a scenario where a pedestrian has to cross the street while the vehicle approaches.
+
+% =====================
+% Python Code Example
+% =====================
+\begin{lstlisting}[style=pythonstyle, caption={Python code}, language=Python]
+from scenariogeneration import xosc
+
+# -----------------------------
+# 1. ENTITIES
+# -----------------------------
+entities = xosc.Entities()
+
+# Ego pedestrian
+ego = xosc.Pedestrian(
+    name="ego",
+    mass=80,
+    category=xosc.PedestrianCategory.pedestrian,
+    boundingbox=xosc.BoundingBox(0.5, 0.5, 1.8, 0.0, 0.0, 0.9)
+)
+
+# Vehicle
+vehicle = xosc.Vehicle(
+    name="vehicle",
+    vehicle_type=xosc.VehicleCategory.car,
+    boundingbox=xosc.BoundingBox(
+        width=2.0,
+        length=4.5,
+        height=1.5,
+        x_center=0.0,
+        y_center=0.0,
+        z_center=0.75
+    ),
+    frontaxle=xosc.Axle(
+        maxsteer=0.5,
+        wheeldia=0.6,
+        track_width=1.6,
+        xpos=3.5,
+        zpos=0.3
+    ),
+    rearaxle=xosc.Axle(
+        maxsteer=0.0,
+        wheeldia=0.6,
+        track_width=1.6,
+        xpos=0.8,
+        zpos=0.3
+    ),
+    max_speed=30.0,
+    max_acceleration=3.0,
+    max_deceleration=6.0,
+    mass=1500
+)
+
+entities.add_scenario_object("ego", ego)
+entities.add_scenario_object("vehicle", vehicle)
+
+# -----------------------------
+# 2. INIT (teleport only)
+# -----------------------------
+init = xosc.Init()
+
+# Place ego in VR start position
+init.add_init_action(
+    "ego",
+    xosc.TeleportAction(
+        xosc.LanePosition(
+            s=10.0,
+            offset=0.0,
+            lane_id=0,
+            road_id="221"
+        )
+    )
+)
+
+# Vehicle start position + speed
+init.add_init_action(
+    "vehicle",
+    xosc.TeleportAction(
+        xosc.LanePosition(
+            s=50.0,
+            offset=0.0,
+            lane_id=-1,
+            road_id="221"
+        )
+    )
+)
+
+init.add_init_action(
+    "vehicle",
+    xosc.AbsoluteSpeedAction(
+        12.0,
+        xosc.TransitionDynamics(
+            xosc.DynamicsShapes.step,
+            xosc.DynamicsDimension.time,
+            0
+        )
+    )
+)
+
+# -----------------------------
+# 3. VEHICLE TRAJECTORY
+# -----------------------------
+vehicle_traj = xosc.Trajectory("vehicle_traj", closed=False)
+vehicle_positions = [
+    xosc.LanePosition(50.0, 0.0, -1, "221"),
+    xosc.LanePosition(60.0, 0.0, -1, "221"),
+    xosc.LanePosition(70.0, 0.0, -1, "221"),
+    xosc.LanePosition(80.0, 0.0, -1, "221"),
+    xosc.LanePosition(90.0, 0.0, -1, "221"),
+]
+vehicle_times = [0, 5, 10, 15, 20]
+veh_poly = xosc.Polyline(time=vehicle_times, positions=vehicle_positions)
+vehicle_traj.add_shape(veh_poly)
+
+# -----------------------------
+# 4. VEHICLE EVENTS
+# -----------------------------
+vehicle_event = xosc.Event("vehicle_drive", xosc.Priority.overwrite)
+vehicle_event.add_action(
+    "follow_vehicle_traj",
+    xosc.FollowTrajectoryAction(vehicle_traj, xosc.FollowingMode.position)
+)
+vehicle_event.add_trigger(
+    xosc.ValueTrigger(
+        "vehicle_start",
+        0,
+        xosc.ConditionEdge.rising,
+        xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan)
+    )
+)
+
+# -----------------------------
+# 5. MANEUVERS / GROUPS
+# -----------------------------
+ego_maneuver = xosc.Maneuver("ego_maneuver")
+
+vehicle_maneuver = xosc.Maneuver("vehicle_maneuver")
+vehicle_maneuver.add_event(vehicle_event)
+
+ego_group = xosc.ManeuverGroup("ego_group")
+ego_group.add_actor("ego")
+ego_group.add_maneuver(ego_maneuver)
+
+vehicle_group = xosc.ManeuverGroup("vehicle_group")
+vehicle_group.add_actor("vehicle")
+vehicle_group.add_maneuver(vehicle_maneuver)
+
+# -----------------------------
+# 6. STORY / ACT
+# -----------------------------
+act = xosc.Act(
+    "main_act",
+    xosc.ValueTrigger(
+        "act_start",
+        0,
+        xosc.ConditionEdge.rising,
+        xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan)
+    )
+)
+act.add_maneuver_group(ego_group)
+act.add_maneuver_group(vehicle_group)
+
+story = xosc.Story("urban_story")
+story.add_act(act)
+
+storyboard = xosc.StoryBoard(init)
+storyboard.add_story(story)
+
+# -----------------------------
+# 7. VR TASKS (CustomCommandAction)
+# -----------------------------
+# Task 1: go to crosswalk
+task1_event = xosc.Event("task_go_to_crosswalk", xosc.Priority.parallel)
+task1_event.add_action(
+    "task1_cmd",
+    xosc.CustomCommandAction(
+        type="VR_TASK",
+        content='{"id":1,"task":"go","target":"crosswalk_main","instruction":"Walk to the crosswalk"}'
+    )
+)
+task1_event.add_trigger(
+    xosc.ValueTrigger("task1_start", 0, xosc.ConditionEdge.rising,
+                      xosc.SimulationTimeCondition(0, xosc.Rule.greaterThan))
+)
+
+# Task 2: wait for green
+task2_event = xosc.Event("task_wait_green", xosc.Priority.parallel)
+task2_event.add_action(
+    "task2_cmd",
+    xosc.CustomCommandAction(
+        type="VR_TASK",
+        content='{"id":2,"task":"wait","target":"traffic_light_main","instruction":"Wait for green signal"}'
+    )
+)
+task2_event.add_trigger(
+    xosc.ValueTrigger("task2_start", 0, xosc.ConditionEdge.rising,
+                      xosc.SimulationTimeCondition(5, xosc.Rule.greaterThan))
+)
+
+# Task 3: cross street
+task3_event = xosc.Event("task_cross_street", xosc.Priority.parallel)
+task3_event.add_action(
+    "task3_cmd",
+    xosc.CustomCommandAction(
+        type="VR_TASK",
+        content='{"id":3,"task":"cross","target":"opposite_sidewalk","instruction":"Cross the street safely"}'
+    )
+)
+task3_event.add_trigger(
+    xosc.ValueTrigger("task3_start", 0, xosc.ConditionEdge.rising,
+                      xosc.SimulationTimeCondition(10, xosc.Rule.greaterThan))
+)
+
+# Add VR tasks to ego maneuver
+ego_maneuver.add_event(task1_event)
+ego_maneuver.add_event(task2_event)
+ego_maneuver.add_event(task3_event)
+
+# -----------------------------
+# 8. ROAD NETWORK
+# -----------------------------
+road_network = xosc.RoadNetwork(roadfile="map.xodr")
+
+# -----------------------------
+# 9. SCENARIO
+# -----------------------------
+scenario = xosc.Scenario(
+    name="UrbanPedestrianCrossing",
+    author="Paritosh",
+    parameters=xosc.ParameterDeclarations(),
+    entities=entities,
+    storyboard=storyboard,
+    roadnetwork=road_network,
+    catalog=xosc.Catalog()
+)
+
+
+\end{lstlisting}
+
 
 \begin{verbatim}
 \end{verbatim}
@@ -549,6 +1026,16 @@ In addition to evaluation using predefined prompts, we conduct a user study to q
     \item \textbf{Extend OpenScenario DSL: } Extend the DSL Actions and entities to support navigation scenarios.
     \item \textbf{Pharmacy example: } Low vision patients tend to confuse pharmacies with green light, a scenario for that could be interesting.
     \item \textbf{Finalize the LLM part: } Finalize how LLM can take a functional description and create a valid open scenario from it.    
+\end{itemize}
+
+\subsubsection{04/02/2026}
+
+\begin{itemize}
+    \item \textbf{Scenarios: } Add the categories and examples of scenarios which have to be addressed for navigation.
+    \item \textbf{Ontology: } Reference the added ontology with these scenarios
+    \item \textbf{LLM: } Answer - "How and What we expect the LLM to generate this scenario?"
+    \item \textbf{Prompts: } Add the prompts for the LLM.
+    \item \textbf{Validation: } Revisit validation based on logical (example walking on un-navigable surfaces), semantic and compile errors.
 \end{itemize}
 
 

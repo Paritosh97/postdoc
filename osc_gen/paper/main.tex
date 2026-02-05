@@ -1,0 +1,192 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.21 of 2022/01/12
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage[T1]{fontenc}
+% T1 fonts will be used to generate the final print and online PDFs,
+% so please use T1 fonts in your manuscript whenever possible.
+% Other font encondings may result in incorrect characters.
+%
+\usepackage{graphicx}
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following two lines
+% to display URLs in blue roman font according to Springer's eBook style:
+%\usepackage{color}
+%\renewcommand\UrlFont{\color{blue}\rmfamily}
+%
+\begin{document}
+%
+\title{Contribution Title\thanks{Supported by organization x.}}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
+Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
+Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+%
+\authorrunning{F. Author et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Princeton University, Princeton NJ 08544, USA \and
+Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
+\email{lncs@springer.com}\\
+\url{http://www.springer.com/gp/computer-science/lncs} \and
+ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
+\email{\{abc,lncs\}@uni-heidelberg.de}}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+The abstract should briefly summarize the contents of the paper in
+150--250 words.
+
+\keywords{First keyword  \and Second keyword \and Another keyword.}
+\end{abstract}
+%
+%
+%
+
+\section{Introduction}
+
+
+\section{Related Work}
+
+\subsection{Pedestrian Navigation and Traffic Safety Tasks}
+
+\subsection{Scenario Description Languages and Task Specification}
+
+\subsection{Human-in-the-Loop Simulation and Virtual Reality}
+
+\subsection{Large Language Models for Structured Scenario Generation}
+
+
+
+\section{Method}
+
+
+\subsection{Pedestrian Navigation Task Taxonomy}
+\label{sec:task_taxonomy}
+
+\subsubsection{Scope and Inclusion Criteria}
+
+This work targets the generation of pedestrian navigation scenarios for
+human-controlled users in XR-based simulation.
+The pedestrian itself is not behaviorally simulated; instead, the
+scenario specifies navigation objectives, constraints, triggers, and
+evaluation conditions, while execution and decision-making are performed
+by the user.
+
+We define a pedestrian navigation task as an atomic interaction unit
+that satisfies the following criteria:
+
+\begin{itemize}
+    \item \textbf{Intentionality}: the task encodes a clear navigation
+    objective or decision the user must perform.
+    \item \textbf{Environmental grounding}: the task is defined with
+    respect to explicit spatial, traffic, or semantic elements of the
+    environment.
+    \item \textbf{Evaluability}: the task admits objective success and
+    failure conditions observable by the simulator.
+    \item \textbf{Composability}: the task can be combined sequentially
+    or hierarchically with other tasks to form longer scenarios.
+    \item \textbf{Scenario expressibility}: the task can be represented
+    declaratively using OpenSCENARIO-style constructs (e.g., goals,
+    constraints, triggers).
+\end{itemize}
+
+Tasks that differ only in low-level motion execution are excluded, as
+locomotion is performed by the user and not modeled by the system.
+
+\subsubsection{Task Taxonomy}
+
+Table~\ref{tab:ped_tasks} summarizes the resulting pedestrian navigation
+task taxonomy, including task definitions and corresponding success and
+failure conditions.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{2.4cm} p{3.1cm} p{3.2cm} p{2.6cm}}
+\hline
+\textbf{Task} &
+\textbf{Description} &
+\textbf{Example Scenario} &
+\textbf{Success / Failure} \\
+\hline
+
+Point-to-point &
+Reach a target location via walkable areas &
+Walk from building entrance to bus stop &
+Arrive within tolerance / enter restricted area \\
+
+Crosswalk-based &
+Cross a road using a designated crosswalk &
+Cross a two-lane street at a marked crosswalk &
+Stay within crosswalk / leave crosswalk \\
+
+Multi-step routes &
+Complete ordered sequence of sub-goals &
+Sidewalk $\rightarrow$ crosswalk $\rightarrow$ bus stop &
+All steps in order / skipped or reordered step \\
+
+Traffic-aware crossing &
+Cross only when a safe traffic gap exists &
+Wait for vehicles to pass before crossing &
+Gap above threshold / unsafe gap \\
+
+Constrained path navigation &
+Navigate using permitted paths only &
+Follow sidewalk around a fenced area &
+Compliant arrival / forbidden shortcut \\
+
+Environmental constrained &
+Avoid static or semantic obstacles &
+Navigate around construction barriers &
+No restricted-zone entry / collision or violation \\
+
+Triggered navigation &
+Begin movement after an event trigger &
+Start walking when pedestrian light turns green &
+Move after trigger / premature movement \\
+
+Tolerance-based navigation &
+Reach target with positional precision &
+Stand at a bus stop marker &
+Within tolerance region / outside bounds \\
+
+Dynamic navigation &
+Adapt path due to dynamic obstacles &
+Re-route when another pedestrian blocks the path &
+Successful adaptation / deadlock \\
+
+Speed adaptation &
+Adapt walking speed to context &
+Slow down because of a slower entity in front &
+Speed within limits / speed violation \\
+
+\hline
+\end{tabular}
+\caption{Pedestrian navigation task taxonomy with representative example scenarios and evaluation criteria.}
+\label{tab:ped_tasks}
+\end{table}
+
+
+\section{Implementation}
+
+\section{Evaluation}
+\section{Conclusion}
+
+\subsubsection{Acknowledgements} 
+
+\bibliographystyle{splncs04}
+\bibliography{main}
+\end{document}
